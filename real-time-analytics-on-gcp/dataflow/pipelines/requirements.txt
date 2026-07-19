@@ -1,0 +1,4 @@
+apache-beam[gcp]==2.57.0
+requests
+google-cloud-secret-manager==2.20.2
+-e ../../common

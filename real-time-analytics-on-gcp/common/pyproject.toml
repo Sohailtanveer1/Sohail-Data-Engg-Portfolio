@@ -1,0 +1,15 @@
+[project]
+name = "supplychain-common"
+version = "0.1.0"
+description = "Shared schema validation, retry, and config constants used by the Kafka producer/consumer, the Pub/Sub bridge, and the Dataflow pipeline."
+requires-python = ">=3.11"
+dependencies = [
+    "jsonschema>=4.21",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["supplychain_common*"]

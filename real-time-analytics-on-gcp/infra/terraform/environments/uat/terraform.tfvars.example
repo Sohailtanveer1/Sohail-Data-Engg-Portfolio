@@ -1,0 +1,13 @@
+# Copy to terraform.tfvars (gitignored) and fill in real values.
+# Typically a SEPARATE GCP project from dev — see docs/architecture/network-diagram.md
+# for why environment isolation is project-level, not just VPC-level.
+
+project_id        = "your-gcp-project-id-uat"
+region             = "us-central1"
+bq_location        = "US"
+github_repository  = "your-github-username/data-engineering-portfolio"
+alert_email        = "you@example.com"
+backlog_threshold  = 2000
+looker_studio_viewers = [
+  # "user:you@example.com",
+]

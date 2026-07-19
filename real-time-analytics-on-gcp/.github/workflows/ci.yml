@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# A PR from a fork has no access to the repo's secrets (GitHub's default
+# security model) — the terraform-plan job below detects that and skips
+# rather than failing, since a fork contributor's PR shouldn't need real
+# GCP credentials just to be lintable/testable.
+permissions:
+  contents: read
+  id-token: write # required for google-github-actions/auth's WIF exchange
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check common kafka bridge dataflow
+      - run: black --check common kafka bridge dataflow
+
+  test-common-and-kafka:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+      - run: pip install -e common
+      - run: pip install jsonschema
+      - name: Unit tests (common, event generator)
+        run: pytest tests/unit -v
+
+  test-dataflow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        # apache-beam doesn't yet support every Python version the moment
+        # it's released — pin explicitly here rather than inheriting
+        # whatever "latest 3.x" the runner image defaults to, so a Python
+        # release doesn't silently break this job.
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+      - run: pip install -r dataflow/pipelines/requirements.txt
+      - name: Beam DoFn + windowing tests
+        run: pytest dataflow/tests -v
+
+  terraform-fmt-and-validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, uat, prod]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+      - name: fmt check (whole repo, once)
+        if: matrix.environment == 'dev'
+        run: terraform fmt -check -recursive infra/terraform
+      - name: validate (no backend, no real credentials needed)
+        working-directory: infra/terraform/environments/${{ matrix.environment }}
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+  terraform-plan-dev:
+    runs-on: ubuntu-latest
+    needs: [terraform-fmt-and-validate]
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER_DEV }}
+          service_account: ${{ vars.CICD_DEPLOYER_SA_DEV }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+      - working-directory: infra/terraform/environments/dev
+        run: |
+          terraform init
+          terraform plan -var-file=terraform.tfvars -no-color
+        # terraform.tfvars is gitignored and must exist as a repo/environment
+        # secret-backed file in your own setup, or be replaced with
+        # -var flags sourced from GitHub Environment variables — see
+        # docs/setup-guide.md for how this repo's own CI is wired.

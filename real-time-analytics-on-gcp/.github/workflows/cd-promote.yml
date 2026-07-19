@@ -1,0 +1,78 @@
+name: CD - Promote to UAT/Prod
+
+# Manual only — there is no auto-deploy path to uat or prod. Promotion is
+# "take what's already running and passing in dev, deploy the exact same
+# git ref elsewhere," not "deploy whatever's newest." The `environment:`
+# block below ties into GitHub's own Environment protection rules — add a
+# required reviewer on the uat and prod Environments in repo Settings and
+# this workflow will pause for approval before the apply step runs.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options: [uat, prod]
+      git_ref:
+        description: "Git ref to deploy (tag/branch/SHA) — defaults to main"
+        required: false
+        default: main
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.git_ref }}
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.CICD_DEPLOYER_SA }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+      - working-directory: infra/terraform/environments/${{ inputs.environment }}
+        run: |
+          terraform init
+          terraform plan -var-file=terraform.tfvars -out=tfplan
+          terraform apply tfplan
+
+  deploy-pipeline:
+    runs-on: ubuntu-latest
+    needs: [terraform-apply]
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.git_ref }}
+          fetch-depth: 0
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.CICD_DEPLOYER_SA }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Deploy streaming pipeline
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION }}
+        run: bash scripts/deploy_dataflow_pipeline.sh ${{ inputs.environment }}
+
+# --- Rollback strategy ------------------------------------------------
+# There is deliberately no "rollback" workflow. Infra rollback IS a
+# forward deploy: `git revert` the offending commit (or re-run this
+# workflow with git_ref pointed at the last-known-good tag), then let CI
+# apply that reverted state normally. This keeps exactly one path through
+# the system for every change, including undoing one — a separate
+# rollback mechanism is itself untested code that only runs during an
+# incident, which is the worst possible time to discover it has a bug.
+# For the Dataflow job specifically: `gcloud dataflow jobs list` to find
+# the prior job, then scripts/deploy_dataflow_pipeline.sh <env> re-run
+# against the reverted commit launches a fresh --update against that
+# same job name — see docs/troubleshooting-guide.md#pipeline-rollback.

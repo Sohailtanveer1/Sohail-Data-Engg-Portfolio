@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = [
+    "E501", # black owns line length; ruff's E501 duplicates it noisily
+    "UP047", # PEP 695 generic syntax (def f[T](...)) is less familiar than TypeVar to most readers — not worth the churn
+]
+
+[tool.black]
+line-length = 120
+target-version = ["py312"]

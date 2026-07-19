@@ -1,0 +1,12 @@
+# Copy to terraform.tfvars (gitignored) and fill in real values.
+# Never commit terraform.tfvars — it's excluded in the repo-root .gitignore.
+
+project_id         = "supply-chain-dev-502714"
+region             = "us-central1"
+bq_location        = "US"
+subnet_cidr        = "10.10.0.0/20"
+github_repository  = "Sohailtanveer1/data-engineering-portfolio"
+alert_email        = "sohailtanveerforjobs@gmail.com"
+looker_studio_viewers = [
+  # "sohailtanveerforjobs@gmail.com",
+]

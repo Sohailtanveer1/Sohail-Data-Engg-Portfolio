@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.supplychain.internal/inventory_event.schema.json",
+  "title": "InventoryEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_timestamp",
+    "schema_version",
+    "source_system",
+    "warehouse_id",
+    "sku",
+    "quantity_delta",
+    "quantity_on_hand"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "event_type": {
+      "type": "string",
+      "enum": ["STOCK_RECEIVED", "STOCK_ADJUSTED", "STOCK_RESERVED", "STOCK_RELEASED"]
+    },
+    "event_timestamp": { "type": "string", "format": "date-time" },
+    "schema_version": { "type": "string", "const": "1.0" },
+    "source_system": { "type": "string" },
+    "warehouse_id": { "type": "string" },
+    "sku": { "type": "string" },
+    "quantity_delta": {
+      "type": "integer",
+      "description": "Signed change applied by this event (negative for reservations/decrements)."
+    },
+    "quantity_on_hand": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Resulting on-hand quantity after this event, as reported by the source system."
+    },
+    "reference_order_id": {
+      "type": "string",
+      "description": "Set when the movement is tied to an order (e.g. STOCK_RESERVED)."
+    }
+  }
+}

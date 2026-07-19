@@ -1,0 +1,18 @@
+{
+  "type": "record",
+  "name": "InventoryEvent",
+  "namespace": "supplychain",
+  "fields": [
+    {"name": "event_id", "type": "string"},
+    {"name": "event_type", "type": {"type": "enum", "name": "InventoryEventType",
+      "symbols": ["STOCK_RECEIVED", "STOCK_ADJUSTED", "STOCK_RESERVED", "STOCK_RELEASED"]}},
+    {"name": "event_timestamp", "type": "string"},
+    {"name": "schema_version", "type": "string"},
+    {"name": "source_system", "type": "string"},
+    {"name": "warehouse_id", "type": "string"},
+    {"name": "sku", "type": "string"},
+    {"name": "quantity_delta", "type": "int"},
+    {"name": "quantity_on_hand", "type": "int"},
+    {"name": "reference_order_id", "type": ["null", "string"], "default": null}
+  ]
+}

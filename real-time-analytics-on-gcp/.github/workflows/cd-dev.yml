@@ -1,0 +1,57 @@
+name: CD - Deploy Dev
+
+# Auto-deploys dev on every merge to main. dev is where you find out a
+# change is broken cheaply — it does NOT gate on manual approval, unlike
+# uat/prod (see cd-promote.yml), because the entire point of having a dev
+# environment is to let it break without ceremony.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  # Two concurrent applies against the same state is how you get a
+  # corrupted/locked state file — never let a second push's deploy start
+  # before the first one finishes.
+  group: cd-dev
+  cancel-in-progress: false
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER_DEV }}
+          service_account: ${{ vars.CICD_DEPLOYER_SA_DEV }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+      - working-directory: infra/terraform/environments/dev
+        run: |
+          terraform init
+          terraform apply -auto-approve -var-file=terraform.tfvars
+
+  deploy-pipeline:
+    runs-on: ubuntu-latest
+    needs: [terraform-apply]
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # deploy script uses `git rev-parse --short HEAD` for the version tag
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER_DEV }}
+          service_account: ${{ vars.CICD_DEPLOYER_SA_DEV }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Deploy streaming pipeline
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID_DEV }}
+          REGION: ${{ vars.GCP_REGION }}
+        run: bash scripts/deploy_dataflow_pipeline.sh dev

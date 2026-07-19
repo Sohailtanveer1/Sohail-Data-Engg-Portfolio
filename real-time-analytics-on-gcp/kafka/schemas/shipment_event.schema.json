@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.supplychain.internal/shipment_event.schema.json",
+  "title": "ShipmentEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_timestamp",
+    "schema_version",
+    "source_system",
+    "shipment_id",
+    "order_id",
+    "carrier",
+    "origin_warehouse_id"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "event_type": {
+      "type": "string",
+      "enum": ["SHIPMENT_CREATED", "SHIPMENT_DISPATCHED", "SHIPMENT_IN_TRANSIT", "SHIPMENT_DELIVERED", "SHIPMENT_DELAYED"]
+    },
+    "event_timestamp": { "type": "string", "format": "date-time" },
+    "schema_version": { "type": "string", "const": "1.0" },
+    "source_system": { "type": "string" },
+    "shipment_id": { "type": "string" },
+    "order_id": { "type": "string" },
+    "carrier": { "type": "string" },
+    "tracking_number": { "type": "string" },
+    "origin_warehouse_id": { "type": "string" },
+    "destination_postal_code": { "type": "string" },
+    "estimated_delivery": { "type": "string", "format": "date-time" }
+  }
+}

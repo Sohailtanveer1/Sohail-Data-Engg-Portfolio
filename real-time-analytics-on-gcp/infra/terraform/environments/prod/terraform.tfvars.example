@@ -1,0 +1,15 @@
+# Copy to terraform.tfvars (gitignored) and fill in real values.
+# A SEPARATE GCP project from dev/uat — do not run this against a free-trial
+# project you're also using for dev experimentation.
+
+project_id         = "your-gcp-project-id-prod"
+region              = "us-central1"
+bq_location         = "US"
+github_repository   = "your-github-username/data-engineering-portfolio"
+alert_email         = "oncall@example.com"
+backlog_threshold   = 500
+freshness_threshold_seconds = 180
+latency_threshold_seconds   = 60
+looker_studio_viewers = [
+  # "group:supplychain-analysts@example.com",
+]

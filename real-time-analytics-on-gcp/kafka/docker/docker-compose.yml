@@ -1,0 +1,83 @@
+name: supplychain-kafka
+
+x-kafka-common: &kafka-common
+  image: apache/kafka:3.7.0
+  environment: &kafka-common-env
+    # Arbitrary cluster identity shared by all 3 brokers — not a secret, just
+    # needs to be identical across nodes, so it's a literal here rather than
+    # sourced from a (gitignored) .env file. Generated once with:
+    # python -c "import uuid,base64;print(base64.urlsafe_b64encode(uuid.uuid4().bytes).decode().rstrip('='))"
+    CLUSTER_ID: AfgL-VBrRa2vM9DcdOsAyw
+    KAFKA_PROCESS_ROLES: broker,controller
+    KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+    KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+    KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+    # Replication factor 3 with min ISR 2 means the cluster tolerates one broker
+    # outage without pausing writes or losing acknowledged data (acks=all).
+    KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+    KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+    KAFKA_MIN_INSYNC_REPLICAS: 2
+    # Topics are created explicitly by scripts/create-topics.sh with deliberate
+    # partition counts and keys — auto-creation would silently mask a design
+    # decision that should be reviewed, so it's disabled.
+    KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+  networks: [supplychain-net]
+
+services:
+  kafka-1:
+    <<: *kafka-common
+    container_name: kafka-1
+    hostname: kafka-1
+    ports: ["9092:9092"]
+    environment:
+      <<: *kafka-common-env
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENERS: INTERNAL://kafka-1:19092,CONTROLLER://kafka-1:9093,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-1:19092,EXTERNAL://localhost:9092
+    volumes: [kafka-1-data:/var/lib/kafka/data]
+
+  kafka-2:
+    <<: *kafka-common
+    container_name: kafka-2
+    hostname: kafka-2
+    ports: ["9094:9094"]
+    environment:
+      <<: *kafka-common-env
+      KAFKA_NODE_ID: 2
+      KAFKA_LISTENERS: INTERNAL://kafka-2:19092,CONTROLLER://kafka-2:9093,EXTERNAL://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-2:19092,EXTERNAL://localhost:9094
+    volumes: [kafka-2-data:/var/lib/kafka/data]
+
+  kafka-3:
+    <<: *kafka-common
+    container_name: kafka-3
+    hostname: kafka-3
+    ports: ["9095:9095"]
+    environment:
+      <<: *kafka-common-env
+      KAFKA_NODE_ID: 3
+      KAFKA_LISTENERS: INTERNAL://kafka-3:19092,CONTROLLER://kafka-3:9093,EXTERNAL://0.0.0.0:9095
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-3:19092,EXTERNAL://localhost:9095
+    volumes: [kafka-3-data:/var/lib/kafka/data]
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on: [kafka-1, kafka-2, kafka-3]
+    ports: ["8080:8080"]
+    environment:
+      KAFKA_CLUSTERS_0_NAME: supplychain-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:19092,kafka-2:19092,kafka-3:19092
+    networks: [supplychain-net]
+
+networks:
+  supplychain-net:
+    name: supplychain-net
+
+volumes:
+  kafka-1-data:
+  kafka-2-data:
+  kafka-3-data:

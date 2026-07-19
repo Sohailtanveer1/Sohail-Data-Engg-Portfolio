@@ -1,0 +1,18 @@
+{
+  "type": "record",
+  "name": "SupplierEvent",
+  "namespace": "supplychain",
+  "fields": [
+    {"name": "event_id", "type": "string"},
+    {"name": "event_type", "type": {"type": "enum", "name": "SupplierEventType",
+      "symbols": ["SUPPLIER_ONBOARDED", "SUPPLIER_PO_ISSUED", "SUPPLIER_PO_ACKNOWLEDGED", "SUPPLIER_PO_DELAYED", "SUPPLIER_RATING_UPDATED"]}},
+    {"name": "event_timestamp", "type": "string"},
+    {"name": "schema_version", "type": "string"},
+    {"name": "source_system", "type": "string"},
+    {"name": "supplier_id", "type": "string"},
+    {"name": "po_number", "type": ["null", "string"], "default": null},
+    {"name": "sku_list", "type": {"type": "array", "items": "string"}, "default": []},
+    {"name": "expected_delivery_date", "type": ["null", "string"], "default": null},
+    {"name": "rating", "type": ["null", "double"], "default": null}
+  ]
+}

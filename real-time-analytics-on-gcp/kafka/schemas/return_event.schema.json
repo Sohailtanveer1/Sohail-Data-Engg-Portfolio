@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.supplychain.internal/return_event.schema.json",
+  "title": "ReturnEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_timestamp",
+    "schema_version",
+    "source_system",
+    "warehouse_id",
+    "return_id",
+    "order_id",
+    "sku",
+    "quantity",
+    "reason_code"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "event_type": {
+      "type": "string",
+      "enum": ["RETURN_INITIATED", "RETURN_RECEIVED", "RETURN_INSPECTED", "RETURN_REFUNDED"]
+    },
+    "event_timestamp": { "type": "string", "format": "date-time" },
+    "schema_version": { "type": "string", "const": "1.0" },
+    "source_system": { "type": "string" },
+    "warehouse_id": { "type": "string" },
+    "return_id": { "type": "string" },
+    "order_id": { "type": "string" },
+    "sku": { "type": "string" },
+    "quantity": { "type": "integer", "minimum": 1 },
+    "reason_code": {
+      "type": "string",
+      "enum": ["DAMAGED", "WRONG_ITEM", "NOT_NEEDED", "QUALITY_ISSUE", "OTHER"]
+    },
+    "inspection_result": {
+      "type": "string",
+      "enum": ["RESTOCKABLE", "DAMAGED_WRITE_OFF"]
+    }
+  }
+}

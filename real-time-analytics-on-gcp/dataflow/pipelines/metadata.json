@@ -1,0 +1,38 @@
+{
+  "name": "Supply Chain Streaming Pipeline",
+  "description": "Pub/Sub -> validate -> window -> dedup -> enrich -> BigQuery Bronze, for the real-time supply chain platform.",
+  "parameters": [
+    {
+      "name": "project",
+      "label": "GCP Project ID",
+      "helpText": "Project containing the Pub/Sub topics and BigQuery datasets.",
+      "paramType": "TEXT"
+    },
+    {
+      "name": "environment",
+      "label": "Environment",
+      "helpText": "dev, uat, or prod — selects which subscriptions/tables/secret this job reads and writes.",
+      "paramType": "TEXT",
+      "regexes": ["^(dev|uat|prod)$"]
+    },
+    {
+      "name": "raw_archive_bucket",
+      "label": "Raw archive GCS bucket",
+      "helpText": "Output of the storage module, e.g. PROJECT-raw-event-archive-dev.",
+      "paramType": "TEXT"
+    },
+    {
+      "name": "carrier_secret_id",
+      "label": "Carrier API Secret Manager secret ID",
+      "helpText": "Defaults to carrier-tracking-api-key-<environment> if omitted.",
+      "paramType": "TEXT",
+      "isOptional": true
+    },
+    {
+      "name": "pipeline_version",
+      "label": "Pipeline version",
+      "helpText": "Git SHA or build tag, written to every row's _pipeline_version audit column.",
+      "paramType": "TEXT"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "type": "record",
+  "name": "ReturnEvent",
+  "namespace": "supplychain",
+  "fields": [
+    {"name": "event_id", "type": "string"},
+    {"name": "event_type", "type": {"type": "enum", "name": "ReturnEventType",
+      "symbols": ["RETURN_INITIATED", "RETURN_RECEIVED", "RETURN_INSPECTED", "RETURN_REFUNDED"]}},
+    {"name": "event_timestamp", "type": "string"},
+    {"name": "schema_version", "type": "string"},
+    {"name": "source_system", "type": "string"},
+    {"name": "warehouse_id", "type": "string"},
+    {"name": "return_id", "type": "string"},
+    {"name": "order_id", "type": "string"},
+    {"name": "sku", "type": "string"},
+    {"name": "quantity", "type": "int"},
+    {"name": "reason_code", "type": {"type": "enum", "name": "ReasonCode",
+      "symbols": ["DAMAGED", "WRONG_ITEM", "NOT_NEEDED", "QUALITY_ISSUE", "OTHER"]}},
+    {"name": "inspection_result", "type": ["null", {"type": "enum", "name": "InspectionResult",
+      "symbols": ["RESTOCKABLE", "DAMAGED_WRITE_OFF"]}], "default": null}
+  ]
+}

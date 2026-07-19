@@ -1,0 +1,9 @@
+# Dev/CI tooling shared across every component. Component-specific runtime
+# deps (confluent-kafka, apache-beam, google-cloud-pubsub, ...) live in
+# each component's own requirements.txt (kafka/producer, kafka/consumer,
+# bridge, dataflow/pipelines) and are installed separately per CI job — see
+# .github/workflows/ci.yml.
+pytest==8.2.2
+pytest-cov==5.0.0
+ruff==0.5.5
+black==24.4.2

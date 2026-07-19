@@ -1,0 +1,17 @@
+# Cloud Build config for the Flex Template image. Needed because
+# `gcloud builds submit --tag` only finds a Dockerfile at the build-context
+# root, but ours lives at dataflow/pipelines/Dockerfile — so we drive the
+# build explicitly with `docker build -f` here. The build context is the
+# repo root (passed as `.` by the deploy script) so the Dockerfile's
+# COPY dataflow/ and COPY common/ resolve.
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - dataflow/pipelines/Dockerfile
+      - -t
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
