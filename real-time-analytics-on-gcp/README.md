@@ -35,6 +35,8 @@ BigQuery — Medallion Architecture
 Looker Studio                       <- dashboards for ops/finance
 ```
 
+![alt text](image.png)
+
 Supporting infrastructure (Terraform-managed, environment-isolated across
 `dev` / `uat` / `prod`): VPC, firewall rules, IAM & service accounts, Secret
 Manager, Cloud Storage, Cloud Logging/Monitoring.
