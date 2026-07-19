@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scb_common"
+version = "0.1.0"
+description = "Shared library for the Supply Chain Batch Data Platform: structured logging, config, batch context, schema contracts, data-quality rules, retry, and metadata/audit helpers."
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+# Heavy engines are optional so the core stays dependency-light and fast to test.
+spark = ["pyspark>=3.5"]
+
+[tool.setuptools.packages.find]
+include = ["scb_common*"]

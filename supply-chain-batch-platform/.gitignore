@@ -3,6 +3,9 @@
 *.tfstate
 *.tfstate.*
 *.tfvars.local
+# Real secrets/backends (examples are committed; real ones are not)
+infra/terraform/**/terraform.tfvars
+infra/terraform/**/backend.hcl
 crash.log
 override.tf
 override.tf.json

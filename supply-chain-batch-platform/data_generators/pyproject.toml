@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scb_generators"
+version = "0.1.0"
+description = "Local source-system emulators (SAP/Salesforce/WMS/TMS/Supplier) for the Supply Chain Batch Data Platform."
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2",
+    "pyarrow>=17.0",
+    "openpyxl>=3.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["data_generators*"]

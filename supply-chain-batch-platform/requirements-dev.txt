@@ -1,0 +1,22 @@
+# Developer tooling for the whole repo. Install with:
+#   python -m venv .venv && . .venv/Scripts/activate   (Windows PowerShell: .venv\Scripts\Activate.ps1)
+#   pip install -r requirements-dev.txt
+#   pip install -e common
+#   pip install -e data_generators
+
+# Formatting / linting / typing
+black==24.10.0
+ruff==0.7.4
+mypy==1.13.0
+
+# Testing
+pytest==8.3.3
+pytest-cov==6.0.0
+
+# Used by data_generators (also declared in data_generators/pyproject.toml)
+pandas>=2.2
+pyarrow>=17.0
+openpyxl>=3.1
+Faker>=30.0
+psycopg2-binary>=2.9
+requests>=2.32

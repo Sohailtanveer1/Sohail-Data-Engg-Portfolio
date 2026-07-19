@@ -1,0 +1,62 @@
+# Local development stack for the Supply Chain Batch Data Platform.
+# Runs the *data-plane* sources on your laptop at $0 GCP cost:
+#   - postgres        : the WMS source (extracted over JDBC in Phase 5)
+#   - mock-salesforce : the Salesforce REST API (paginated, incremental)
+#   - sftp            : the SAP + Supplier drop zone (CSV / Excel)
+#
+# Local Airflow and local Spark are introduced in Phase 8 / Phase 6 respectively,
+# when there are DAGs/jobs to run — running them now (empty) would add noise.
+#
+# Usage (from this directory):
+#   cp .env.example .env
+#   docker compose up -d
+#   docker compose ps
+#   docker compose down            # stop (data volume persists)
+#   docker compose down -v         # stop + wipe the Postgres volume
+
+name: scb-local
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: scb-wms-postgres
+    environment:
+      POSTGRES_USER: ${WMS_DB_USER:-wms}
+      POSTGRES_PASSWORD: ${WMS_DB_PASSWORD:-wms_local_pw}
+      POSTGRES_DB: ${WMS_DB_NAME:-wms}
+    ports:
+      - "${WMS_DB_PORT:-5432}:5432"
+    volumes:
+      - wms_pgdata:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${WMS_DB_USER:-wms} -d ${WMS_DB_NAME:-wms}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mock-salesforce:
+    build: ./mock_salesforce
+    container_name: scb-mock-salesforce
+    environment:
+      DATA_DIR: /data
+      SF_API_TOKEN: ${SF_API_TOKEN:-local-dev-token}
+    ports:
+      - "${SF_API_PORT:-8080}:8080"
+    volumes:
+      # serves whatever the generator wrote under data/landing/salesforce
+      - ../data/landing/salesforce:/data:ro
+
+  sftp:
+    image: atmoz/sftp:latest
+    container_name: scb-sftp
+    ports:
+      - "${SFTP_PORT:-2222}:22"
+    volumes:
+      # SAP and Supplier drops mount straight into the sftp user's home
+      - ../data/landing/sap_erp:/home/${SFTP_USER:-scb}/sap_erp
+      - ../data/landing/supplier_portal:/home/${SFTP_USER:-scb}/supplier_portal
+    command: ${SFTP_USER:-scb}:${SFTP_PASSWORD:-scb_local_pw}:1001
+
+volumes:
+  wms_pgdata:

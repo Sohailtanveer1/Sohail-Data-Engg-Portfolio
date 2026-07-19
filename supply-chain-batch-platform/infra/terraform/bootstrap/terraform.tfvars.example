@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is git-ignored.
+project_id          = "scb-platform-dev"
+region              = "us-central1"
+state_bucket_prefix = "scb-scb-platform-dev" # -> bucket: scb-scb-platform-dev-tfstate

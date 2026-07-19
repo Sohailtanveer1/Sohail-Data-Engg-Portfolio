@@ -10,10 +10,13 @@ This is the **batch** counterpart to the sibling
 platform. Where that project answers *"what is happening right now?"*, this one
 answers *"what happened, at scale, reliably, every day — and can I trust it?"*
 
-> ⚠️ **Status: Phase 1 — Planning.** No production code has been written yet.
-> This repository currently contains the architecture, design decisions (ADRs),
-> data model, roadmap, and cost/risk analysis. See
-> [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) for the live phase tracker.
+> **Status: Phase 3 — Terraform foundation built** (Phases 1–2 approved).
+> The `scb_common` library + five source generators + local Docker stack run at
+> $0 (46 tests green), and the GCP foundation (private networking, least-privilege
+> IAM, buckets, secrets, $50 budget) is written as reusable Terraform and
+> **validates** across dev/uat/prod (not yet applied — needs your project). See
+> [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) and the phase walkthroughs in
+> [docs/](docs/) (`phase-02-*`, `phase-03-*`).
 
 ---
 

@@ -1,0 +1,3 @@
+# Copy to backend.hcl (git-ignored) and set to the bootstrap state bucket.
+bucket = "scb-scb-platform-dev-tfstate"
+prefix = "scb/dev"
