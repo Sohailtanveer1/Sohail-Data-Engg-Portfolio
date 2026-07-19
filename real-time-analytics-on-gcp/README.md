@@ -15,7 +15,7 @@ within seconds of an event occurring — not hours.
 
 ## Architecture
 
-![alt text](image-1.png)
+![alt text](image-2.png)
 
 Supporting infrastructure (Terraform-managed, environment-isolated across
 `dev` / `uat` / `prod`): VPC, firewall rules, IAM & service accounts, Secret
