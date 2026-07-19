@@ -15,27 +15,7 @@ within seconds of an event occurring — not hours.
 
 ## Architecture
 
-```
-Warehouses (event sources)
-      │
-      ▼
-Kafka (local, Dockerized)          <- durable local ingestion buffer
-      │
-      ▼
-Google Pub/Sub                      <- cloud-native, scalable ingestion
-      │
-      ▼
-Dataflow (Apache Beam, streaming)   <- validation, enrichment, dedup, windowing
-      │
-      ▼
-BigQuery — Medallion Architecture
-   Bronze (raw)  →  Silver (cleaned/conformed)  →  Gold (business marts)
-      │
-      ▼
-Looker Studio                       <- dashboards for ops/finance
-```
-
-![alt text](image.png)
+![alt text](image-1.png)
 
 Supporting infrastructure (Terraform-managed, environment-isolated across
 `dev` / `uat` / `prod`): VPC, firewall rules, IAM & service accounts, Secret
