@@ -1,0 +1,26 @@
+# SAP purchase_order -> Silver fact (idempotent upsert on business key).
+# The DQ gate quarantines the injected bad rows (null SKU, negative qty, XXX ccy).
+entity: purchase_order
+source: sap_erp
+target_table: "scb.silver.purchase_order"
+scd: upsert
+business_keys: [po_number, po_line]
+dedup_order_by: _ingest_ts
+schema:
+  version: 1
+  business_keys: [po_number, po_line]
+  columns:
+    - {name: po_number, dtype: string, nullable: false}
+    - {name: po_line, dtype: int, nullable: false}
+    - {name: material_id, dtype: string}
+    - {name: vendor_id, dtype: string}
+    - {name: warehouse_id, dtype: string}
+    - {name: order_qty, dtype: int}
+    - {name: unit_price, dtype: double}
+    - {name: currency, dtype: string}
+    - {name: order_date, dtype: date}
+    - {name: expected_date, dtype: date}
+dq_rules:
+  - {type: not_null, column: material_id}
+  - {type: non_negative, column: order_qty}
+  - {type: allowed_values, column: currency, allowed: [USD, CAD]}

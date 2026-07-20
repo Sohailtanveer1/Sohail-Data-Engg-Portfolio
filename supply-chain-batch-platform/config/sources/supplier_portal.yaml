@@ -1,0 +1,20 @@
+# Supplier Portal — SFTP Excel (.xlsx), daily. One workbook, one sheet per entity.
+source: supplier_portal
+source_type: sftp
+format: xlsx
+landing_path: data/landing/supplier_portal
+workbook: "supplier_portal.xlsx"
+archive_path: data/archive
+entities:
+  supplier_catalog:
+    load_type: full
+    business_keys: [supplier_id, material_id]
+  price_list:
+    load_type: full
+    business_keys: [supplier_id, material_id]
+  lead_time:
+    load_type: full
+    business_keys: [supplier_id, material_id]
+  moq:
+    load_type: full
+    business_keys: [supplier_id, material_id]

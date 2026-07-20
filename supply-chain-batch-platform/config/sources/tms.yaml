@@ -1,0 +1,12 @@
+# Transportation Management System — GCS Parquet export, daily.
+source: tms
+source_type: gcs
+format: parquet
+landing_path: data/landing/tms
+partition_pattern: "ship_date={ds}"
+archive_path: data/archive
+entities:
+  shipment:
+    load_type: incremental
+    watermark_column: ship_date
+    business_keys: [shipment_id]

@@ -10,12 +10,13 @@ This is the **batch** counterpart to the sibling
 platform. Where that project answers *"what is happening right now?"*, this one
 answers *"what happened, at scale, reliably, every day — and can I trust it?"*
 
-> **Status: Phase 4 — BigQuery datasets & metadata model built** (Phases 1–3 approved).
-> Local platform runs at $0 (52 tests green); the GCP foundation (networking, IAM,
-> buckets, secrets, budget) **plus** BigQuery (`scb_metadata_<env>` + `scb_gold_<env>`,
-> 20 tables) are reusable Terraform that **validates** across dev/uat/prod (not yet
-> applied — needs your project). See [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) and
-> the phase walkthroughs in [docs/](docs/) (`phase-02-*` … `phase-04-*`).
+> **Status: Phase 7 — Gold dimensional model built** (Phases 1–6 approved).
+> Full medallion is coded: ingest → Bronze → Silver (Iceberg, DQ, SCD1/SCD2) →
+> Gold star (point-in-time SK resolution) → BigQuery. **81 tests green**; DQ proven
+> on real Bronze (31/1238 quarantined) and `dim_date` built for real (1,461 rows).
+> GCP foundation + BigQuery (20 tables) are validated Terraform.
+> _(Spark steps need a JDK/Dataproc — see docs/phase-06–07.)_ See
+> [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) and [docs/](docs/) (`phase-02-*` … `phase-07-*`).
 
 ---
 

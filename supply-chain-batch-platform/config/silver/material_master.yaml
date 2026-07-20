@@ -1,0 +1,23 @@
+# SAP material_master -> Silver dim_material (SCD2: track attribute history).
+entity: material_master
+source: sap_erp
+target_table: "scb.silver.material"
+scd: scd2
+surrogate_key: material_sk
+business_keys: [material_id]
+tracked_columns: [description, category, uom, hazmat, std_cost]
+dedup_order_by: _ingest_ts
+schema:
+  version: 1
+  business_keys: [material_id]
+  columns:
+    - {name: material_id, dtype: string, nullable: false}
+    - {name: description, dtype: string}
+    - {name: category, dtype: string}
+    - {name: uom, dtype: string}
+    - {name: hazmat, dtype: string}
+    - {name: std_cost, dtype: double}
+    - {name: updated_date, dtype: date}
+dq_rules:
+  - {type: not_null, column: material_id}
+  - {type: non_negative, column: std_cost, severity: warn}

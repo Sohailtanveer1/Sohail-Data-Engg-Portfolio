@@ -1,0 +1,27 @@
+# Silver purchase_order -> Gold fact_purchase_order.
+# Resolves conformed-dimension surrogate keys via point-in-time joins (SCD2 dims)
+# and computes line_amount. Loaded to the partitioned BigQuery Gold table.
+entity: fact_purchase_order
+silver_source: "scb.silver.purchase_order"
+target_table: fact_purchase_order          # in the --dataset (scb_gold_<env>)
+date_column: order_date
+surrogate_key:
+  name: po_sk
+  keys: [po_number, po_line]
+dimensions:
+  - name: dim_material
+    table: "scb.silver.material"
+    business_key: material_id
+    sk: material_sk
+    scd: scd2
+    fact_date: order_date
+  - name: dim_warehouse
+    table: "scb.silver.warehouse"          # built by the same Silver framework
+    business_key: warehouse_id
+    sk: warehouse_sk
+    scd: scd1
+measures:
+  - {name: order_qty}
+  - {name: unit_price}
+  - {name: line_amount, expr: "order_qty * unit_price"}
+  - {name: currency}

@@ -1,0 +1,22 @@
+# Warehouse Management System — PostgreSQL over JDBC, every 4h. Needs the local
+# Docker Postgres (Phase 2) seeded via scripts/seed_wms.py.
+source: wms
+source_type: jdbc
+schema: wms
+format: jdbc
+landing_path: ""
+archive_path: ""
+entities:
+  warehouse_location:
+    load_type: full
+    business_keys: [location_id]
+  inventory:
+    load_type: full
+    business_keys: [warehouse_id, material_id]
+  stock_movement:
+    load_type: incremental
+    watermark_column: updated_at
+    business_keys: [movement_id]
+  cycle_count:
+    load_type: full
+    business_keys: [count_id]

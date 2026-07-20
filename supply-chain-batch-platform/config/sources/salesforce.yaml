@@ -1,0 +1,23 @@
+# Salesforce CRM — REST/JSON, hourly incremental. The connector reads the same
+# JSON payloads the mock API serves; a live-API variant is a documented extension.
+source: salesforce
+source_type: rest
+format: json
+landing_path: data/landing/salesforce
+archive_path: data/archive
+entities:
+  customer:
+    load_type: incremental
+    watermark_column: SystemModstamp
+    business_keys: [Id]
+  account:
+    load_type: incremental
+    watermark_column: SystemModstamp
+    business_keys: [Id]
+  sales_rep:
+    load_type: full
+    business_keys: [Id]
+  credit:
+    load_type: incremental
+    watermark_column: SystemModstamp
+    business_keys: [Id]

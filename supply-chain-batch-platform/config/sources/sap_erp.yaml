@@ -1,0 +1,25 @@
+# SAP ERP — SFTP CSV drops (pipe-delimited), daily.
+source: sap_erp
+source_type: sftp
+format: csv
+delimiter: "|"
+landing_path: data/landing/sap_erp
+archive_path: data/archive
+entities:
+  material_master:
+    load_type: full
+    business_keys: [material_id]
+  vendor:
+    load_type: full
+    business_keys: [vendor_id]
+  purchase_order:
+    load_type: incremental
+    watermark_column: order_date
+    business_keys: [po_number, po_line]
+  goods_receipt:
+    load_type: incremental
+    watermark_column: receipt_date
+    business_keys: [receipt_id]
+  inventory_valuation:
+    load_type: full
+    business_keys: [material_id, warehouse_id, valuation_date]

@@ -17,10 +17,10 @@ Mistakes → Cost Considerations → Next Steps).
 | 1 | Planning & Architecture | ✅ Approved | Local (docs only) | $0 |
 | 2 | Local dev environment + data generators + `common` package | ✅ Complete | Local (Docker) | $0 |
 | 3 | Terraform foundation: APIs, VPC/networking, IAM, buckets, Secret Manager | ✅ Complete | GCP dev | ~$0–1 |
-| 4 | BigQuery: datasets + metadata/control/audit + Gold DDL | 🟨 In review | GCP dev | ~$0 (free tier) |
-| 5 | Ingestion: land 5 sources → Bronze (metadata-driven, file tracking, archive) | ⬜ | Local + GCP | ~$1–3 |
-| 6 | Spark Bronze→Silver: schema validation, DQ, dedup, SCD1/SCD2, idempotency | ⬜ | Local Spark + Dataproc Serverless | ~$2–5 |
-| 7 | Gold build: dimensional model → BigQuery | ⬜ | Dataproc Serverless + BQ | ~$1–3 |
+| 4 | BigQuery: datasets + metadata/control/audit + Gold DDL | ✅ Complete | GCP dev | ~$0 (free tier) |
+| 5 | Ingestion: land 5 sources → Bronze (metadata-driven, file tracking, archive) | ✅ Complete | Local + GCP | ~$1–3 |
+| 6 | Spark Bronze→Silver: schema validation, DQ, dedup, SCD1/SCD2, idempotency | ✅ Complete | Local Spark + Dataproc Serverless | ~$2–5 |
+| 7 | Gold build: dimensional model → BigQuery | 🟨 In review | Dataproc Serverless + BQ | ~$1–3 |
 | 8 | Orchestration: Airflow DAGs → **Cloud Composer** (managed) | ⬜ | Local dev + Cloud Composer | ⚠️ ~$10–15/day while up |
 | 9 | Data quality framework + monitoring/logging + alerts | ⬜ | GCP dev | ~$0–1 |
 | 10 | CI/CD (GitHub Actions) + full test suite | ⬜ | GitHub | $0 |
@@ -156,10 +156,106 @@ store. Free-tier only. Walkthrough:
 
 ### Exit criteria
 
-- [ ] **User reviews Phase 4.** ← _we are here_
+- [x] Phase 4 reviewed; approved to proceed.
 
 **Cleanup checklist (Phase 4):** covered by the dev `terraform destroy`
 (`delete_contents_on_destroy=true` in non-prod). BigQuery cost is ~$0 (free tier).
+
+---
+
+## Phase 5 — Ingestion (land → Bronze) — 🟨 In review
+
+**Objective:** Metadata-driven extractors that land all five sources to Bronze
+Parquet with checksum dedup, watermark incremental, archive, and full audit.
+Walkthrough: [docs/phase-05-ingestion.md](docs/phase-05-ingestion.md).
+
+### Deliverables
+
+- [x] `ingestion/` framework: `LandingStore` (local+GCS), format readers
+      (CSV/JSON/Parquet/Excel), `jdbc.py`, `bronze.py`, `extractor.py`, `run.py`
+- [x] `config/sources/*.yaml` for all five sources (metadata-driven)
+- [x] Bronze contract: raw, string-typed, 7 audit columns, partitioned by ingest_date
+- [x] Checksum idempotency, per-entity watermarks, archive, batch/file audit
+- [x] **63 tests passing** (+11 ingestion)
+- [x] **Real run verified**: 4 file-based sources → 14 Bronze files; re-run sap_erp
+      → 5 skipped (idempotent); audit + watermarks written
+
+### Known/deferred
+
+- **WMS (JDBC)** path is implemented but not run in-session (needs the live
+  Postgres from Phase 2; daemon was down). Run once the Docker stack is up.
+- Salesforce connector reads the landed JSON payloads (same as the mock API
+  serves); a live-HTTP-API variant is a documented extension.
+
+### Exit criteria
+
+- [x] Phase 5 reviewed; approved to proceed.
+
+**Cleanup checklist (Phase 5):** local only — `rm -rf data/bronze data/_audit
+data/archive` to reset. $0 GCP.
+
+---
+
+## Phase 6 — Spark Bronze → Silver (Iceberg, DQ, SCD) — 🟨 In review
+
+**Objective:** PySpark/Iceberg transforms turning Bronze into typed, deduped,
+quality-gated Silver with SCD1/SCD2 history, idempotently. Walkthrough:
+[docs/phase-06-spark-silver.md](docs/phase-06-spark-silver.md).
+
+### Deliverables
+
+- [x] `spark/transforms/`: `expressions` (pure builders), `scd` (MERGE SQL),
+      `dq_spark` (Spark gate reusing Phase-2 rules), `clean`, `session` (Iceberg+AQE)
+- [x] `spark/jobs/silver_job.py` — config-driven Bronze→Silver orchestration
+- [x] `config/silver/` — `material_master` (SCD2 dim) + `purchase_order` (fact)
+- [x] **76 tests passing** (+13 Spark builder tests: casts, every rule's SQL,
+      SCD1/SCD2 statements, DDL, dedup)
+- [x] Cross-phase proof: real Bronze `purchase_order` (1238 rows) → **31
+      quarantined** by the same DQ config that feeds the Spark gate
+- [x] Spark modules `py_compile` clean
+
+### Not done here (environment)
+
+- **Spark not executed in-session:** no JDK installed and PySpark lacks Python
+  3.14 support. Logic is pure-unit-tested; orchestration is compile-checked. Run
+  via a local JDK + py3.12 venv, or Dataproc Serverless (both in the phase doc).
+
+### Exit criteria
+
+- [x] Phase 6 reviewed; approved to proceed (Spark execution deferred to user's JDK/Dataproc).
+
+**Cleanup checklist (Phase 6):** local only — `rm -rf data/silver data/quarantine`.
+Dataproc Serverless batches auto-terminate (no idle cost).
+
+---
+
+## Phase 7 — Gold: dimensional model → BigQuery — 🟨 In review
+
+**Objective:** Build the conformed Kimball star from Silver (point-in-time SK
+resolution, semi-additive handling) and load it to the Phase-4 BigQuery Gold
+tables. Walkthrough: [docs/phase-07-gold.md](docs/phase-07-gold.md).
+
+### Deliverables
+
+- [x] `spark/transforms/gold.py` — pure builders: `generate_dim_date`,
+      `pit_join_clause` (SCD2 as-of), `build_fact_select` (SK resolution + measures)
+- [x] `spark/jobs/gold_job.py` — Silver→Gold→BigQuery (Spark-BQ connector)
+- [x] `config/gold/fact_purchase_order.yaml` + `scripts/build_dim_date.py`
+- [x] **81 tests passing** (+5 Gold)
+- [x] **`dim_date` built for real** (1,461 rows, 4 fiscal years) — no Spark needed
+- [x] `gold_job.py` compiles
+
+### Not done here (environment)
+
+- Fact build is Spark → same JDK/Dataproc constraint as Phase 6. Logic
+  unit-tested; job compile-checked; `dim_date` runs standalone.
+
+### Exit criteria
+
+- [ ] **User reviews Phase 7.** ← _we are here_
+
+**Cleanup checklist (Phase 7):** local `rm -rf data/gold`; BigQuery Gold covered by
+`terraform destroy`. $0 (free tier + Serverless).
 
 ---
 
@@ -197,4 +293,14 @@ store. Free-tier only. Walkthrough:
   (needs user's GCP project). Reviewed & approved.
 - **2026-07-20** — **Phase 4 built:** `bigquery` module + 20 tables (7 metadata,
   13 Gold) + `BigQueryMetadataStore`. `validate` Success on all roots; 52 tests
-  green. Not applied. Awaiting review.
+  green. Not applied. Reviewed & approved.
+- **2026-07-20** — **Phase 5 built:** metadata-driven ingestion (`ingestion/` +
+  5 source configs). Real run landed 4 file-based sources to Bronze (14 files),
+  idempotency + audit + watermarks verified; 63 tests green. Reviewed & approved.
+- **2026-07-20** — **Phase 6 built:** Spark/Iceberg Bronze→Silver transforms
+  (DQ gate, dedup, SCD1/SCD2 MERGE) + silver_job + 2 configs. 76 tests green;
+  DQ verified on real Bronze (31/1238 quarantined). Spark not executed (no JDK).
+  Reviewed & approved.
+- **2026-07-20** — **Phase 7 built:** Gold builders (dim_date, PIT SCD2 joins,
+  fact assembly) + gold_job + config. 81 tests green; dim_date built for real
+  (1,461 rows). Fact build needs JDK/Dataproc. Awaiting review.
