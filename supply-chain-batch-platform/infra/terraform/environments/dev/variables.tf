@@ -61,3 +61,9 @@ variable "bigquery_deletion_protection" {
   description = "Block destroy of BigQuery tables (true in prod)."
   default     = false
 }
+
+variable "enable_composer" {
+  type        = bool
+  description = "Create the Cloud Composer environment (ADR-0003). Default OFF — cost guard."
+  default     = false
+}

@@ -1,0 +1,35 @@
+# Local Airflow for DAG development ($0). A single "standalone" container
+# (webserver + scheduler + SQLite) is plenty to author/parse/trigger DAGs before
+# deploying the identical files to Cloud Composer (Phase 8, ADR-0003).
+#
+#   docker compose -f airflow/docker-compose.airflow.yml up
+#   open http://localhost:8080  (user/pass printed in the logs on first start)
+#   docker compose -f airflow/docker-compose.airflow.yml down
+#
+# DAGs and plugins are mounted live; the repo is mounted so `dag_builder`,
+# `ingestion`, `scb_common`, and the Spark job modules import.
+
+name: scb-airflow
+
+services:
+  airflow:
+    image: apache/airflow:2.9.3-python3.11
+    container_name: scb-airflow
+    command: standalone
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+      AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
+      # make repo packages importable inside the scheduler/worker
+      PYTHONPATH: /opt/airflow/repo:/opt/airflow/repo/common:/opt/airflow/dags:/opt/airflow/plugins
+      SCB_PROJECT: scb-platform-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./plugins:/opt/airflow/plugins
+      - ..:/opt/airflow/repo          # the whole repo (ingestion, common, spark, config)
+      - airflow_db:/opt/airflow
+
+volumes:
+  airflow_db:

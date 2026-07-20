@@ -29,3 +29,13 @@ output "bigquery_datasets" {
   description = "Created BigQuery dataset ids."
   value       = module.bigquery.dataset_ids
 }
+
+output "composer_airflow_uri" {
+  description = "Airflow UI URL (empty unless enable_composer=true)."
+  value       = module.composer.airflow_uri
+}
+
+output "composer_dag_prefix" {
+  description = "GCS prefix to deploy DAGs to (empty unless enabled)."
+  value       = module.composer.dag_gcs_prefix
+}

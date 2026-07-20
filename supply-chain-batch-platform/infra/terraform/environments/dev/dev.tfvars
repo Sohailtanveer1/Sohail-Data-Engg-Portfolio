@@ -12,3 +12,6 @@ composer_services_cidr = "10.21.0.0/20"
 # Cost controls
 budget_amount         = 50
 force_destroy_buckets = true
+
+# Orchestration (ADR-0003): flip to true in Phase 8, then destroy between breaks.
+enable_composer = false

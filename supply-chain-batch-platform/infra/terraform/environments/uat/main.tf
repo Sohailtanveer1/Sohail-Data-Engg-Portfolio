@@ -183,3 +183,19 @@ module "bigquery" {
 
   depends_on = [module.project_services]
 }
+
+module "composer" {
+  source          = "../../modules/composer"
+  enable          = var.enable_composer
+  project_id      = var.project_id
+  region          = var.region
+  name_prefix     = local.name_prefix
+  network         = module.networking.network_id
+  subnetwork      = module.networking.subnet_self_link
+  service_account = module.iam.emails["composer"]
+  env_variables = {
+    SCB_ENV = var.env
+  }
+
+  depends_on = [module.networking, module.iam]
+}

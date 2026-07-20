@@ -20,8 +20,8 @@ Mistakes → Cost Considerations → Next Steps).
 | 4 | BigQuery: datasets + metadata/control/audit + Gold DDL | ✅ Complete | GCP dev | ~$0 (free tier) |
 | 5 | Ingestion: land 5 sources → Bronze (metadata-driven, file tracking, archive) | ✅ Complete | Local + GCP | ~$1–3 |
 | 6 | Spark Bronze→Silver: schema validation, DQ, dedup, SCD1/SCD2, idempotency | ✅ Complete | Local Spark + Dataproc Serverless | ~$2–5 |
-| 7 | Gold build: dimensional model → BigQuery | 🟨 In review | Dataproc Serverless + BQ | ~$1–3 |
-| 8 | Orchestration: Airflow DAGs → **Cloud Composer** (managed) | ⬜ | Local dev + Cloud Composer | ⚠️ ~$10–15/day while up |
+| 7 | Gold build: dimensional model → BigQuery | ✅ Complete | Dataproc Serverless + BQ | ~$1–3 |
+| 8 | Orchestration: Airflow DAGs → **Cloud Composer** (managed) | 🟨 In review | Local dev + Cloud Composer | ⚠️ ~$10–15/day while up |
 | 9 | Data quality framework + monitoring/logging + alerts | ⬜ | GCP dev | ~$0–1 |
 | 10 | CI/CD (GitHub Actions) + full test suite | ⬜ | GitHub | $0 |
 | 11 | Looker Studio dashboards + DR + docs finalization + cleanup | ⬜ | GCP dev | $0 |
@@ -252,10 +252,44 @@ tables. Walkthrough: [docs/phase-07-gold.md](docs/phase-07-gold.md).
 
 ### Exit criteria
 
-- [ ] **User reviews Phase 7.** ← _we are here_
+- [x] Phase 7 reviewed; approved to proceed.
 
 **Cleanup checklist (Phase 7):** local `rm -rf data/gold`; BigQuery Gold covered by
 `terraform destroy`. $0 (free tier + Serverless).
+
+---
+
+## Phase 8 — Orchestration (Airflow → Cloud Composer) — 🟨 In review
+
+**Objective:** Wire the full daily batch into Airflow (dynamic-from-metadata,
+sensors, task groups, pools, SLAs, trigger rules), develop locally, deploy to a
+**real Cloud Composer** env (guarded). Walkthrough:
+[docs/phase-08-orchestration.md](docs/phase-08-orchestration.md).
+
+### Deliverables
+
+- [x] Guarded `composer` Terraform module (`enable=false` default) + wired into
+      all env roots behind `enable_composer`
+- [x] `airflow/dags/dag_builder.py` — pure task-graph builder + acyclic guard
+- [x] `airflow/dags/supply_chain_daily.py` — dynamic DAG (sensors → ingest →
+      Silver/Gold Dataproc batches), TaskGroups, pools, SLAs, XCom, trigger rules
+- [x] `airflow/plugins/scb/sensors.py` — reschedule-mode FileArrivalSensor
+- [x] `airflow/docker-compose.airflow.yml` — local Airflow ($0 dev)
+- [x] **87 tests passing** (+6 DAG builder); Airflow modules compile; Composer
+      module `terraform validate` Success on all roots
+
+### Not done here (environment/cost)
+
+- Airflow not run in-session (Python 3.14). Run locally via the compose, or on Composer.
+- **Composer not created** (`enable_composer=false`). Turn on deliberately per the
+  runbook, then destroy between breaks (cost, ADR-0003).
+
+### Exit criteria
+
+- [ ] **User reviews Phase 8.** ← _we are here_
+
+**Cleanup checklist (Phase 8):** `docker compose -f airflow/docker-compose.airflow.yml
+down -v` (local). If Composer was enabled: `terraform apply -var enable_composer=false`.
 
 ---
 
@@ -303,4 +337,8 @@ tables. Walkthrough: [docs/phase-07-gold.md](docs/phase-07-gold.md).
   Reviewed & approved.
 - **2026-07-20** — **Phase 7 built:** Gold builders (dim_date, PIT SCD2 joins,
   fact assembly) + gold_job + config. 81 tests green; dim_date built for real
-  (1,461 rows). Fact build needs JDK/Dataproc. Awaiting review.
+  (1,461 rows). Fact build needs JDK/Dataproc. Reviewed & approved.
+- **2026-07-20** — **Phase 8 built:** guarded `composer` module + dynamic Airflow
+  DAG (dag_builder pure/tested) + sensor plugin + local Airflow compose. 87 tests
+  green; all Terraform roots validate. Composer stays OFF until deliberately enabled.
+  Awaiting review.
