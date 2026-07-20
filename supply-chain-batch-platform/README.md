@@ -10,15 +10,20 @@ This is the **batch** counterpart to the sibling
 platform. Where that project answers *"what is happening right now?"*, this one
 answers *"what happened, at scale, reliably, every day — and can I trust it?"*
 
-> **Status: Phase 10 — CI/CD built** (Phases 1–9 approved).
-> The whole platform now sits behind an automated gate: GitHub Actions runs
-> format/lint/type/**94 tests**/`terraform validate`/DAG validation on every PR,
-> with keyless (WIF) deploy to dev. Repo is CI-clean locally (black/ruff/pytest/
-> tf-fmt all green). Full pipeline: ingest → Bronze → Silver (Iceberg, DQ, SCD) →
-> Gold → BigQuery, orchestrated by Airflow → guarded Composer, observable via
-> log-metrics + alerts.
-> _(Spark/Airflow execution needs a JDK/Composer — see docs/phase-06–08.)_ See
-> [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) and [docs/](docs/) (`phase-02-*` … `phase-10-*`).
+> ✅ **Status: COMPLETE — all 11 phases delivered.**
+> Full platform: ingest → Bronze → Silver (Iceberg, DQ, SCD1/SCD2) → Gold star →
+> BigQuery, orchestrated by Airflow → guarded Cloud Composer, observable via
+> log-metrics + alerts, gated by GitHub Actions CI (94 tests) across dev/uat/prod,
+> and served to **Looker Studio** through four dashboards. Built to run inside the
+> GCP Free Trial; nothing was left billing.
+>
+> 📖 **Start with [HANDBOOK.md](HANDBOOK.md)** — the single front door. Deploy via
+> [RUNBOOK.md](RUNBOOK.md); track phases in [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md).
+>
+> _Honest scope: Spark/Airflow/Terraform were **validated/compile-checked/unit-tested**
+> but not executed on the authoring machine (no JDK; Python 3.14; no live project) —
+> logic is fully tested and runbooks cover real execution. See
+> [docs/lessons-learned.md](docs/lessons-learned.md)._
 
 ---
 
@@ -106,8 +111,8 @@ provisioning anything.
 
 ## Start here
 
-1. [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) — where we are, phase by phase.
-2. [docs/architecture/architecture-overview.md](docs/architecture/architecture-overview.md) — the system.
-3. [docs/adr/](docs/adr/) — *why* every major decision was made.
-4. [docs/roadmap.md](docs/roadmap.md) — the build plan and milestones.
-5. [docs/cost-optimization.md](docs/cost-optimization.md) — how we stay inside the Free Trial.
+1. **[HANDBOOK.md](HANDBOOK.md)** — the front door: understand, run, and defend the whole platform.
+2. [RUNBOOK.md](RUNBOOK.md) — exact deploy / operate / teardown commands.
+3. [docs/architecture/architecture-overview.md](docs/architecture/architecture-overview.md) — the system · [docs/adr/](docs/adr/) — the *why*.
+4. [docs/interview-questions.md](docs/interview-questions.md) — defend every decision · [docs/lessons-learned.md](docs/lessons-learned.md) — the honest reflections.
+5. [docs/](docs/README.md) — the full documentation index.

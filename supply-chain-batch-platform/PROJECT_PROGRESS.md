@@ -23,8 +23,8 @@ Mistakes → Cost Considerations → Next Steps).
 | 7 | Gold build: dimensional model → BigQuery | ✅ Complete | Dataproc Serverless + BQ | ~$1–3 |
 | 8 | Orchestration: Airflow DAGs → **Cloud Composer** (managed) | ✅ Complete | Local dev + Cloud Composer | ⚠️ ~$10–15/day while up |
 | 9 | Data quality framework + monitoring/logging + alerts | ✅ Complete | GCP dev | ~$0–1 |
-| 10 | CI/CD (GitHub Actions) + full test suite | 🟨 In review | GitHub | $0 |
-| 11 | Looker Studio dashboards + DR + docs finalization + cleanup | ⬜ | GCP dev | $0 |
+| 10 | CI/CD (GitHub Actions) + full test suite | ✅ Complete | GitHub | $0 |
+| 11 | Looker Studio dashboards + DR + docs finalization + cleanup | ✅ Complete | GCP dev | $0 |
 
 > ⚠️ **Cost sentinel:** Cloud Composer is the single biggest spend in this project
 > (~$10–15/day, no scale-to-zero). **Decision (ADR-0003): we run a real Composer
@@ -340,10 +340,35 @@ a keyless deploy to dev. Walkthrough: [docs/phase-10-cicd.md](docs/phase-10-cicd
 
 ### Exit criteria
 
-- [ ] **User reviews Phase 10.** ← _we are here_
-- [ ] (On push to GitHub) CI runs green; WIF secrets configured for CD.
+- [x] Phase 10 reviewed; approved to proceed.
 
 **Cleanup checklist (Phase 10):** none — GitHub Actions is free; no GCP resources.
+
+---
+
+## Phase 11 — Serve, harden & hand off — ✅ Complete
+
+**Objective:** Looker dashboards, DR, front-door docs, final cost review, cleanup
+verification. Walkthrough: [docs/phase-11-delivery.md](docs/phase-11-delivery.md).
+
+### Deliverables
+
+- [x] 4 Gold analytics views (`bigquery/sql/gold/vw_*.sql`) + `create_gold_views.sh`
+- [x] Looker dashboard definitions ([looker/dashboards.md](looker/dashboards.md))
+- [x] **HANDBOOK.md** (front door) + **RUNBOOK.md** (deploy/operate/cleanup)
+- [x] Guides: disaster-recovery, troubleshooting, security, lessons-learned,
+      interview-questions, setup, developer, CONTRIBUTING
+- [x] Final cost review + cleanup verification checklist
+
+**Cleanup checklist (Phase 11):** see [RUNBOOK §C](RUNBOOK.md#c-cleanup--verify-0-run-rate).
+
+---
+
+## 🎉 Project complete
+
+All 11 phases done. **94 tests green**, 7 Terraform modules across dev/uat/prod,
+full medallion + orchestration + observability + CI/CD + serving. Nothing left
+billing during the build. Start any review from [HANDBOOK.md](HANDBOOK.md).
 
 ---
 
@@ -401,4 +426,7 @@ a keyless deploy to dev. Walkthrough: [docs/phase-10-cicd.md](docs/phase-10-cicd
   green; freshness live-verified on real audit; all roots validate. Reviewed & approved.
 - **2026-07-20** — **Phase 10 built:** GitHub Actions CI (lint/type/test/terraform/
   DAG) + WIF CD + pre-commit. Repo made CI-clean (51 lint fixes); black/ruff/pytest/
-  tf-fmt all green. Awaiting review.
+  tf-fmt all green. Reviewed & approved.
+- **2026-07-20** — **Phase 11 built (PROJECT COMPLETE):** 4 Gold Looker views +
+  dashboard defs, HANDBOOK + RUNBOOK, DR/troubleshooting/security/lessons/interview
+  guides, final cost review + cleanup verification. All 11 phases done.
