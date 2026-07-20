@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from scb_common.context import BatchContext
@@ -33,7 +33,7 @@ class _JsonFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
-            "ts": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "ts": datetime.fromtimestamp(record.created, tz=UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -79,8 +79,9 @@ def _configure_root(level: int) -> None:
 class StructuredLogger:
     """Thin wrapper that always emits the batch envelope + arbitrary fields."""
 
-    def __init__(self, name: str, ctx: BatchContext | None = None,
-                 base_fields: dict[str, Any] | None = None) -> None:
+    def __init__(
+        self, name: str, ctx: BatchContext | None = None, base_fields: dict[str, Any] | None = None
+    ) -> None:
         self._log = logging.getLogger(name)
         self._base: dict[str, Any] = {}
         if ctx is not None:
@@ -95,8 +96,7 @@ class StructuredLogger:
         return child
 
     def _emit(self, level: int, message: str, exc_info: bool = False, **fields: Any) -> None:
-        self._log.log(level, message, extra={"fields": {**self._base, **fields}},
-                      exc_info=exc_info)
+        self._log.log(level, message, extra={"fields": {**self._base, **fields}}, exc_info=exc_info)
 
     def debug(self, message: str, **fields: Any) -> None:
         self._emit(logging.DEBUG, message, **fields)
@@ -110,9 +110,17 @@ class StructuredLogger:
     def error(self, message: str, exc_info: bool = False, **fields: Any) -> None:
         self._emit(logging.ERROR, message, exc_info=exc_info, **fields)
 
-    def metrics(self, *, status: str, rows_read: int = 0, rows_written: int = 0,
-                rows_rejected: int = 0, duration_s: float | None = None,
-                error: str | None = None, **extra: Any) -> None:
+    def metrics(
+        self,
+        *,
+        status: str,
+        rows_read: int = 0,
+        rows_written: int = 0,
+        rows_rejected: int = 0,
+        duration_s: float | None = None,
+        error: str | None = None,
+        **extra: Any,
+    ) -> None:
         """Emit the canonical end-of-stage metrics line."""
         self._emit(
             logging.INFO if status == "success" else logging.ERROR,
@@ -127,11 +135,35 @@ class StructuredLogger:
         )
 
 
-def get_logger(name: str, ctx: BatchContext | None = None,
-               level: int = logging.INFO, **base_fields: Any) -> StructuredLogger:
+def get_logger(
+    name: str, ctx: BatchContext | None = None, level: int = logging.INFO, **base_fields: Any
+) -> StructuredLogger:
     """Return a configured structured logger.
 
     Root JSON handler is configured once on first call (idempotent).
     """
     _configure_root(level)
     return StructuredLogger(name, ctx=ctx, base_fields=base_fields or None)
+
+
+def attach_handler(handler: logging.Handler, level: int = logging.INFO) -> None:
+    """Attach an extra handler to the root logger (e.g. a Cloud Logging handler)."""
+    _configure_root(level)
+    logging.getLogger().addHandler(handler)
+
+
+def enable_cloud_logging(level: int = logging.INFO) -> logging.Handler:
+    """Ship structured logs to Cloud Logging.
+
+    On GCP-managed runtimes (Composer/Dataproc) our JSON-to-stdout is already
+    parsed into ``jsonPayload`` automatically — which is what the log-based metrics
+    (Phase 9 `monitoring` module) filter on. This helper attaches an explicit
+    StructuredLogHandler for non-managed contexts. Lazy import of the optional
+    ``google-cloud-logging`` dependency.
+    """
+    from google.cloud.logging_v2.handlers import StructuredLogHandler
+
+    handler = StructuredLogHandler()
+    handler.setFormatter(_JsonFormatter())
+    attach_handler(handler, level)
+    return handler

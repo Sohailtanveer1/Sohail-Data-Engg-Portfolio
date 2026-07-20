@@ -10,6 +10,7 @@ from datetime import date
 
 from data_generators import sap_erp
 from data_generators.reference import ReferenceData
+
 from scb_common.dq import AllowedValues, NonNegative, NotNull, Unique, evaluate
 from scb_common.errors import DataQualityError
 from scb_common.metadata import DQResultRecord, InMemoryMetadataStore
@@ -64,13 +65,22 @@ def test_clean_feed_passes_and_writes_audit():
 
     # persist DQ results to the metadata store (as Phase 5/6 will)
     store = InMemoryMetadataStore()
-    store.write_dq([
-        DQResultRecord(batch_id="b1", entity="purchase_order", rule=r.rule,
-                       severity=r.severity, passed=r.passed, failed=r.failed,
-                       threshold=r.threshold, breached=r.breached,
-                       sample_keys=r.sample_keys)
-        for r in report.results
-    ])
+    store.write_dq(
+        [
+            DQResultRecord(
+                batch_id="b1",
+                entity="purchase_order",
+                rule=r.rule,
+                severity=r.severity,
+                passed=r.passed,
+                failed=r.failed,
+                threshold=r.threshold,
+                breached=r.breached,
+                sample_keys=r.sample_keys,
+            )
+            for r in report.results
+        ]
+    )
     assert len(store.dq) == len(PO_RULES)
 
 

@@ -7,7 +7,7 @@ incremental pulls. ``IsDeleted`` models soft deletes.
 
 from __future__ import annotations
 
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 
 from data_generators.reference import ReferenceData
 
@@ -17,12 +17,17 @@ ENTITIES = ["customer", "account", "sales_rep", "credit"]
 
 def _modstamp(gen_date: date, rng) -> str:
     """A UTC ISO timestamp at a random second within the generation day."""
-    midnight = datetime.combine(gen_date, time.min, tzinfo=timezone.utc)
+    midnight = datetime.combine(gen_date, time.min, tzinfo=UTC)
     return (midnight + timedelta(seconds=rng.randint(0, 86_399))).isoformat()
 
 
-def generate(ref: ReferenceData, gen_date: date, *, changed_fraction: float = 0.3,
-             dirty_fraction: float = 0.02) -> dict[str, list[dict]]:
+def generate(
+    ref: ReferenceData,
+    gen_date: date,
+    *,
+    changed_fraction: float = 0.3,
+    dirty_fraction: float = 0.02,
+) -> dict[str, list[dict]]:
     r = ref.rng
     # Only a fraction of customers "change" on a given day (incremental feed).
     changed = r.sample(ref.customers, k=max(1, int(len(ref.customers) * changed_fraction)))
@@ -33,22 +38,26 @@ def generate(ref: ReferenceData, gen_date: date, *, changed_fraction: float = 0.
         credit_limit = c["credit_limit"]
         if r.random() < dirty_fraction:
             credit_limit = -abs(credit_limit)  # invalid negative credit
-        customer.append({
-            "Id": c["customer_id"],
-            "Name": c["customer_name"],
-            "Segment__c": c["segment"],
-            "OwnerRepId__c": c["rep_id"],
-            "IsDeleted": r.random() < 0.02,
-            "SystemModstamp": _modstamp(gen_date, r),
-        })
-        credit.append({
-            "Id": f"CR{c['customer_id']}",
-            "CustomerId__c": c["customer_id"],
-            "CreditLimit__c": credit_limit,
-            "Currency__c": "USD",
-            "RiskRating__c": r.choice(["LOW", "MEDIUM", "HIGH"]),
-            "SystemModstamp": _modstamp(gen_date, r),
-        })
+        customer.append(
+            {
+                "Id": c["customer_id"],
+                "Name": c["customer_name"],
+                "Segment__c": c["segment"],
+                "OwnerRepId__c": c["rep_id"],
+                "IsDeleted": r.random() < 0.02,
+                "SystemModstamp": _modstamp(gen_date, r),
+            }
+        )
+        credit.append(
+            {
+                "Id": f"CR{c['customer_id']}",
+                "CustomerId__c": c["customer_id"],
+                "CreditLimit__c": credit_limit,
+                "Currency__c": "USD",
+                "RiskRating__c": r.choice(["LOW", "MEDIUM", "HIGH"]),
+                "SystemModstamp": _modstamp(gen_date, r),
+            }
+        )
 
     account = [
         {
@@ -70,5 +79,4 @@ def generate(ref: ReferenceData, gen_date: date, *, changed_fraction: float = 0.
         for rep in ref.reps
     ]
 
-    return {"customer": customer, "account": account, "sales_rep": sales_rep,
-            "credit": credit}
+    return {"customer": customer, "account": account, "sales_rep": sales_rep, "credit": credit}

@@ -90,7 +90,7 @@ def query(object_name: str):
     except ValueError:
         return jsonify(error="bad_request", message="limit/offset must be integers"), 400
 
-    page = records[offset:offset + limit]
+    page = records[offset : offset + limit]
     next_offset = offset + limit
     done = next_offset >= len(records)
     body = {
@@ -100,7 +100,9 @@ def query(object_name: str):
         "records": page,
     }
     if not done:
-        body["nextRecordsUrl"] = f"/api/{object_name}?since={since or ''}&limit={limit}&offset={next_offset}"
+        body["nextRecordsUrl"] = (
+            f"/api/{object_name}?since={since or ''}&limit={limit}&offset={next_offset}"
+        )
     return jsonify(body)
 
 

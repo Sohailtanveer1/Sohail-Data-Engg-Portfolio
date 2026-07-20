@@ -17,8 +17,13 @@ import os
 ICEBERG_PACKAGE = "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.6.1"
 
 
-def build_spark(app_name: str = "scb-silver", *, catalog: str = "scb",
-                warehouse: str | None = None, with_packages: bool = True):
+def build_spark(
+    app_name: str = "scb-silver",
+    *,
+    catalog: str = "scb",
+    warehouse: str | None = None,
+    with_packages: bool = True,
+):
     """Return a configured SparkSession. Import is local so this module is
     importable without pyspark (for compile checks/tests of the builders)."""
     from pyspark.sql import SparkSession
@@ -28,17 +33,19 @@ def build_spark(app_name: str = "scb-silver", *, catalog: str = "scb",
     builder = (
         SparkSession.builder.appName(app_name)
         # --- Iceberg catalog (ADR-0004) ---
-        .config("spark.sql.extensions",
-                "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
+        .config(
+            "spark.sql.extensions",
+            "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
+        )
         .config(f"spark.sql.catalog.{catalog}", "org.apache.iceberg.spark.SparkCatalog")
         .config(f"spark.sql.catalog.{catalog}.type", "hadoop")
         .config(f"spark.sql.catalog.{catalog}.warehouse", warehouse)
         # --- Spark tuning (Phase-6 topics) ---
-        .config("spark.sql.adaptive.enabled", "true")                       # AQE
-        .config("spark.sql.adaptive.coalescePartitions.enabled", "true")    # small-file fix
-        .config("spark.sql.adaptive.skewJoin.enabled", "true")              # skew handling
+        .config("spark.sql.adaptive.enabled", "true")  # AQE
+        .config("spark.sql.adaptive.coalescePartitions.enabled", "true")  # small-file fix
+        .config("spark.sql.adaptive.skewJoin.enabled", "true")  # skew handling
         .config("spark.sql.shuffle.partitions", "200")
-        .config("spark.sql.sources.partitionOverwriteMode", "dynamic")      # idempotent writes
+        .config("spark.sql.sources.partitionOverwriteMode", "dynamic")  # idempotent writes
         .config("spark.sql.autoBroadcastJoinThreshold", str(64 * 1024 * 1024))  # broadcast dims
     )
     if with_packages:

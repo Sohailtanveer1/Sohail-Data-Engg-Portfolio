@@ -1,0 +1,90 @@
+name: CD (dev)
+
+# Deploys the platform to the dev environment. Auth is keyless via Workload
+# Identity Federation (no exported SA keys). A pull request runs `plan`; a merge
+# to main runs `apply`. Composer stays OFF unless you set enable_composer=true.
+#
+# Required repo settings / secrets:
+#   vars.GCP_PROJECT_ID          e.g. scb-platform-dev
+#   vars.TF_STATE_BUCKET         the bootstrap state bucket
+#   secrets.WIF_PROVIDER         projects/NN/locations/global/workloadIdentityPools/../providers/..
+#   secrets.DEPLOYER_SA          scb-ci-deployer@<project>.iam.gserviceaccount.com
+#   secrets.BILLING_ACCOUNT      000000-AAAAAA-BBBBBB
+#   (optional) vars.ALERT_EMAIL  monitoring alert address
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ["infra/terraform/**"]
+  push:
+    branches: [main]
+    paths: ["infra/terraform/**"]
+
+permissions:
+  contents: read
+  id-token: write        # required for WIF
+  pull-requests: write
+
+jobs:
+  terraform-dev:
+    name: Terraform ${{ github.event_name == 'push' && 'apply' || 'plan' }} (dev)
+    runs-on: ubuntu-latest
+    environment: dev      # add required reviewers here for a manual approval gate
+    defaults:
+      run:
+        working-directory: infra/terraform/environments/dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.DEPLOYER_SA }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+
+      - name: Init
+        run: terraform init -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" -backend-config="prefix=scb/dev"
+
+      - name: Plan
+        run: |
+          terraform plan -input=false \
+            -var="project_id=${{ vars.GCP_PROJECT_ID }}" \
+            -var="billing_account=${{ secrets.BILLING_ACCOUNT }}" \
+            -var="notification_email=${{ vars.ALERT_EMAIL }}" \
+            -out=tfplan
+
+      - name: Apply
+        if: github.event_name == 'push'
+        run: terraform apply -input=false tfplan
+
+  deploy-dags:
+    name: Deploy DAGs to Composer
+    needs: terraform-dev
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform/environments/dev
+    steps:
+      - uses: actions/checkout@v4
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.DEPLOYER_SA }}
+      - uses: hashicorp/setup-terraform@v3
+      - name: Resolve DAG bucket
+        id: dagbucket
+        run: |
+          terraform init -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" -backend-config="prefix=scb/dev"
+          echo "prefix=$(terraform output -raw composer_dag_prefix 2>/dev/null)" >> "$GITHUB_OUTPUT"
+      - name: Sync DAGs & plugins (only if Composer is enabled)
+        if: steps.dagbucket.outputs.prefix != ''
+        working-directory: .
+        run: |
+          gcloud storage rsync -r airflow/dags   "${{ steps.dagbucket.outputs.prefix }}"
+          gcloud storage rsync -r airflow/plugins "$(dirname ${{ steps.dagbucket.outputs.prefix }})/plugins"

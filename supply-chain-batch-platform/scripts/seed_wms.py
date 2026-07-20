@@ -42,9 +42,7 @@ def seed(data_root: Path, gen_date: date) -> None:
                 continue
             cur.execute(f"TRUNCATE wms.{table};")
             with csv_path.open("r", encoding="utf-8") as fh:
-                cur.copy_expert(
-                    f"COPY wms.{table} FROM STDIN WITH (FORMAT csv, HEADER true)", fh
-                )
+                cur.copy_expert(f"COPY wms.{table} FROM STDIN WITH (FORMAT csv, HEADER true)", fh)
             cur.execute(f"SELECT count(*) FROM wms.{table};")
             print(f"  loaded wms.{table}: {cur.fetchone()[0]} rows")
         conn.commit()

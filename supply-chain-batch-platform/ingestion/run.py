@@ -13,11 +13,10 @@ import argparse
 from datetime import date
 from pathlib import Path
 
-from scb_common.config import load_config
-from scb_common.metadata import JsonlMetadataStore, MetadataStore
-
 from ingestion.extractor import Extractor
 from ingestion.landing import LocalLandingStore
+from scb_common.config import load_config
+from scb_common.metadata import JsonlMetadataStore, MetadataStore
 
 CONFIG_DIR = Path("config/sources")
 
@@ -25,6 +24,7 @@ CONFIG_DIR = Path("config/sources")
 def _metastore(args) -> MetadataStore:
     if args.bq_project and args.bq_dataset:
         from scb_common.stores.bigquery import BigQueryMetadataStore
+
         return BigQueryMetadataStore(project=args.bq_project, dataset=args.bq_dataset)
     return JsonlMetadataStore(args.audit_dir)
 
@@ -48,16 +48,19 @@ def main(argv: list[str] | None = None) -> int:
         sources = [args.source]
 
     metastore = _metastore(args)
-    extractor = Extractor(landing=LocalLandingStore(), metastore=metastore,
-                          bronze_root=args.bronze_root, env="local")
+    extractor = Extractor(
+        landing=LocalLandingStore(), metastore=metastore, bronze_root=args.bronze_root, env="local"
+    )
 
     for source in sources:
         cfg = load_config(cfg_dir / f"{source}.yaml")
         entities = [args.entity] if args.entity else None
         result = extractor.run_source(cfg, args.date, entities=entities)
-        print(f"[{source}] {args.date} -> read={result.rows_read} written={result.rows_written} "
-              f"processed={result.files_processed} skipped={result.files_skipped} "
-              f"status={result.status} batch={result.batch_id}")
+        print(
+            f"[{source}] {args.date} -> read={result.rows_read} written={result.rows_written} "
+            f"processed={result.files_processed} skipped={result.files_skipped} "
+            f"failed={result.files_failed} status={result.status} batch={result.batch_id}"
+        )
 
     print(f"Bronze under: {Path(args.bronze_root).resolve()}")
     return 0

@@ -19,9 +19,10 @@ Each rule has a ``severity``:
 from __future__ import annotations
 
 import re
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any
 
 from scb_common.errors import DataQualityError
 
@@ -67,9 +68,7 @@ class InRange(Rule):
             return False
         if self.min_value is not None and n < self.min_value:
             return False
-        if self.max_value is not None and n > self.max_value:
-            return False
-        return True
+        return not (self.max_value is not None and n > self.max_value)
 
 
 @dataclass
@@ -192,8 +191,9 @@ def _key_of(row: Row, column: str) -> Any:
     return row.get(column)
 
 
-def evaluate(rows: Sequence[Row], rules: Sequence[Rule | Unique],
-             key_column: str | None = None) -> DQReport:
+def evaluate(
+    rows: Sequence[Row], rules: Sequence[Rule | Unique], key_column: str | None = None
+) -> DQReport:
     """Evaluate all rules over ``rows`` and return a DQReport.
 
     ``key_column`` (usually the business key) is captured in ``sample_keys`` for
@@ -214,8 +214,12 @@ def evaluate(rows: Sequence[Row], rules: Sequence[Rule | Unique],
                     seen[v] = i
             failed = len(failing)
             res = RuleResult(
-                rule=rule.name, column=rule.column, severity=rule.severity,
-                passed=len(rows) - failed, failed=failed, threshold=rule.threshold,
+                rule=rule.name,
+                column=rule.column,
+                severity=rule.severity,
+                passed=len(rows) - failed,
+                failed=failed,
+                threshold=rule.threshold,
                 failing_indexes=failing[:50],
                 sample_keys=[_key_of(rows[i], key_column or rule.column) for i in failing[:10]],
             )
@@ -223,8 +227,12 @@ def evaluate(rows: Sequence[Row], rules: Sequence[Rule | Unique],
             failing = [i for i, row in enumerate(rows) if not rule.passes(row)]
             failed = len(failing)
             res = RuleResult(
-                rule=rule.name, column=rule.column, severity=rule.severity,
-                passed=len(rows) - failed, failed=failed, threshold=rule.threshold,
+                rule=rule.name,
+                column=rule.column,
+                severity=rule.severity,
+                passed=len(rows) - failed,
+                failed=failed,
+                threshold=rule.threshold,
                 failing_indexes=failing[:50],
                 sample_keys=[_key_of(rows[i], key_column or rule.column) for i in failing[:10]],
             )
@@ -242,11 +250,13 @@ _REGISTRY: dict[str, Callable[..., Rule | Unique]] = {
     "in_range": InRange,
     "non_negative": NonNegative,
     "allowed_values": lambda column, allowed=(), **kw: AllowedValues(
-        column=column, allowed=set(allowed), **kw),
+        column=column, allowed=set(allowed), **kw
+    ),
     "matches_regex": MatchesRegex,
     "valid_date": ValidDate,
     "foreign_key": lambda column, valid_keys=(), **kw: ForeignKey(
-        column=column, valid_keys=set(valid_keys), **kw),
+        column=column, valid_keys=set(valid_keys), **kw
+    ),
 }
 
 

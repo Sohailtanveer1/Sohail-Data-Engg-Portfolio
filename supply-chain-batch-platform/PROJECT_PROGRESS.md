@@ -21,9 +21,9 @@ Mistakes → Cost Considerations → Next Steps).
 | 5 | Ingestion: land 5 sources → Bronze (metadata-driven, file tracking, archive) | ✅ Complete | Local + GCP | ~$1–3 |
 | 6 | Spark Bronze→Silver: schema validation, DQ, dedup, SCD1/SCD2, idempotency | ✅ Complete | Local Spark + Dataproc Serverless | ~$2–5 |
 | 7 | Gold build: dimensional model → BigQuery | ✅ Complete | Dataproc Serverless + BQ | ~$1–3 |
-| 8 | Orchestration: Airflow DAGs → **Cloud Composer** (managed) | 🟨 In review | Local dev + Cloud Composer | ⚠️ ~$10–15/day while up |
-| 9 | Data quality framework + monitoring/logging + alerts | ⬜ | GCP dev | ~$0–1 |
-| 10 | CI/CD (GitHub Actions) + full test suite | ⬜ | GitHub | $0 |
+| 8 | Orchestration: Airflow DAGs → **Cloud Composer** (managed) | ✅ Complete | Local dev + Cloud Composer | ⚠️ ~$10–15/day while up |
+| 9 | Data quality framework + monitoring/logging + alerts | ✅ Complete | GCP dev | ~$0–1 |
+| 10 | CI/CD (GitHub Actions) + full test suite | 🟨 In review | GitHub | $0 |
 | 11 | Looker Studio dashboards + DR + docs finalization + cleanup | ⬜ | GCP dev | $0 |
 
 > ⚠️ **Cost sentinel:** Cloud Composer is the single biggest spend in this project
@@ -286,10 +286,64 @@ sensors, task groups, pools, SLAs, trigger rules), develop locally, deploy to a
 
 ### Exit criteria
 
-- [ ] **User reviews Phase 8.** ← _we are here_
+- [x] Phase 8 reviewed; approved to proceed.
 
 **Cleanup checklist (Phase 8):** `docker compose -f airflow/docker-compose.airflow.yml
 down -v` (local). If Composer was enabled: `terraform apply -var enable_composer=false`.
+
+---
+
+## Phase 9 — Data quality, monitoring & logging — 🟨 In review
+
+**Objective:** Make the platform trustworthy + observable: hardened DQ, structured
+logs → Cloud Logging metrics, alert policies (failure/freshness/rejection), audit
+freshness monitor. Walkthrough: [docs/phase-09-monitoring.md](docs/phase-09-monitoring.md).
+
+### Deliverables
+
+- [x] `monitoring` Terraform module: 3 log-based metrics + 3 alert policies + email
+      channel — wired into all env roots
+- [x] Cloud Logging helper (`enable_cloud_logging`) + `scb_common/monitoring.py`
+      freshness report (pure + JSONL + CLI)
+- [x] DQ hardening: extractor **quarantines corrupted files** and continues
+- [x] Full DQ validation-coverage mapping documented (all 10 requested checks)
+- [x] **94 tests passing** (+8); `terraform validate` Success on all roots
+- [x] **Live-verified**: freshness monitor on real audit (fresh→exit0, forced→exit1)
+
+### Exit criteria
+
+- [x] Phase 9 reviewed; approved to proceed.
+
+**Cleanup checklist (Phase 9):** covered by dev `terraform destroy`; monitoring is
+free-tier (~$0). Local: nothing to clean.
+
+---
+
+## Phase 10 — CI/CD & testing — 🟨 In review
+
+**Objective:** Automate the quality gate (format/lint/type/test/terraform/DAG) and
+a keyless deploy to dev. Walkthrough: [docs/phase-10-cicd.md](docs/phase-10-cicd.md).
+
+### Deliverables
+
+- [x] `ci.yml` — python (black/ruff/mypy/pytest) · terraform matrix (fmt+validate)
+      · airflow DAG validation
+- [x] `cd-dev.yml` — WIF keyless auth, plan-on-PR / apply-on-merge, deploy DAGs
+- [x] `.pre-commit-config.yaml` — local parity (+ private-key detection)
+- [x] **Repo made CI-clean**: 51 lint issues fixed; black/ruff/pytest(94)/tf-fmt
+      all green locally; workflow YAML valid
+
+### Note
+
+- **mypy** runs in CI (Linux); it couldn't run locally (this machine's Application
+  Control blocks its compiled extension). Config scoped to `common/scb_common`.
+
+### Exit criteria
+
+- [ ] **User reviews Phase 10.** ← _we are here_
+- [ ] (On push to GitHub) CI runs green; WIF secrets configured for CD.
+
+**Cleanup checklist (Phase 10):** none — GitHub Actions is free; no GCP resources.
 
 ---
 
@@ -341,4 +395,10 @@ down -v` (local). If Composer was enabled: `terraform apply -var enable_composer
 - **2026-07-20** — **Phase 8 built:** guarded `composer` module + dynamic Airflow
   DAG (dag_builder pure/tested) + sensor plugin + local Airflow compose. 87 tests
   green; all Terraform roots validate. Composer stays OFF until deliberately enabled.
-  Awaiting review.
+  Reviewed & approved.
+- **2026-07-20** — **Phase 9 built:** `monitoring` module (log metrics + alerts),
+  Cloud Logging helper, freshness monitor, corrupted-file quarantine. 94 tests
+  green; freshness live-verified on real audit; all roots validate. Reviewed & approved.
+- **2026-07-20** — **Phase 10 built:** GitHub Actions CI (lint/type/test/terraform/
+  DAG) + WIF CD + pre-commit. Repo made CI-clean (51 lint fixes); black/ruff/pytest/
+  tf-fmt all green. Awaiting review.

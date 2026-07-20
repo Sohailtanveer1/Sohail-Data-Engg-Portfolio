@@ -20,8 +20,7 @@ def test_succeeds_after_transient_failures():
 def test_reraises_after_exhausting_attempts():
     calls = {"n": 0}
 
-    @retry(attempts=2, base_delay=0, jitter=False, sleep=lambda _: None,
-           exceptions=(TimeoutError,))
+    @retry(attempts=2, base_delay=0, jitter=False, sleep=lambda _: None, exceptions=(TimeoutError,))
     def always_fail():
         calls["n"] += 1
         raise TimeoutError("nope")
@@ -47,8 +46,13 @@ def test_non_listed_exception_not_retried():
 def test_on_retry_callback_invoked():
     seen = []
 
-    @retry(attempts=3, base_delay=0, jitter=False, sleep=lambda _: None,
-           on_retry=lambda attempt, exc, delay: seen.append(attempt))
+    @retry(
+        attempts=3,
+        base_delay=0,
+        jitter=False,
+        sleep=lambda _: None,
+        on_retry=lambda attempt, exc, delay: seen.append(attempt),
+    )
     def flaky():
         if len(seen) < 2:
             raise ConnectionError()

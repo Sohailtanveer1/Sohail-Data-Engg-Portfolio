@@ -18,8 +18,9 @@ ENTITIES = ["shipment"]
 DELIVERY_STATUS = ["IN_TRANSIT", "DELIVERED", "EXCEPTION", "RETURNED"]
 
 
-def generate(ref: ReferenceData, gen_date: date, *, n_shipments: int = 600,
-             dirty_fraction: float = 0.02) -> dict[str, list[dict]]:
+def generate(
+    ref: ReferenceData, gen_date: date, *, n_shipments: int = 600, dirty_fraction: float = 0.02
+) -> dict[str, list[dict]]:
     r = ref.rng
     iso = gen_date.isoformat()
 
@@ -39,22 +40,24 @@ def generate(ref: ReferenceData, gen_date: date, *, n_shipments: int = 600,
 
         ship_dt = gen_date
         deliver_dt = (ship_dt + timedelta(days=transit_days)) if delivered else None
-        shipment.append({
-            "shipment_id": f"SH{gen_date.strftime('%Y%m%d')}{i:06d}",
-            "carrier_scac": carrier["carrier_scac"],
-            "mode": carrier["mode"],
-            "origin_warehouse_id": origin["warehouse_id"],
-            "customer_id": customer["customer_id"],
-            "route_id": f"RT{origin['warehouse_id']}-{r.randint(1,50):03d}",
-            "weight_lb": weight,
-            "freight_cost": freight,
-            "currency": "USD",
-            "transit_days": transit_days,
-            "promised_days": promised_days,
-            "on_time": bool(delivered and transit_days <= promised_days),
-            "delivery_status": status,
-            "ship_date": iso,
-            "delivery_date": deliver_dt.isoformat() if deliver_dt else None,
-        })
+        shipment.append(
+            {
+                "shipment_id": f"SH{gen_date.strftime('%Y%m%d')}{i:06d}",
+                "carrier_scac": carrier["carrier_scac"],
+                "mode": carrier["mode"],
+                "origin_warehouse_id": origin["warehouse_id"],
+                "customer_id": customer["customer_id"],
+                "route_id": f"RT{origin['warehouse_id']}-{r.randint(1,50):03d}",
+                "weight_lb": weight,
+                "freight_cost": freight,
+                "currency": "USD",
+                "transit_days": transit_days,
+                "promised_days": promised_days,
+                "on_time": bool(delivered and transit_days <= promised_days),
+                "delivery_status": status,
+                "ship_date": iso,
+                "delivery_date": deliver_dt.isoformat() if deliver_dt else None,
+            }
+        )
 
     return {"shipment": shipment}

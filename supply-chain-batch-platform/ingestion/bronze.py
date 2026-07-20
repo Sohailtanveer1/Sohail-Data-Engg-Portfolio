@@ -16,8 +16,15 @@ import pandas as pd
 
 from scb_common.context import utcnow
 
-AUDIT_COLS = ["_batch_id", "_source", "_entity", "_source_file",
-              "_ingest_ts", "_ingest_date", "_row_hash"]
+AUDIT_COLS = [
+    "_batch_id",
+    "_source",
+    "_entity",
+    "_source_file",
+    "_ingest_ts",
+    "_ingest_date",
+    "_row_hash",
+]
 
 
 def row_hash(row: dict[str, Any]) -> str:
@@ -28,32 +35,54 @@ def row_hash(row: dict[str, Any]) -> str:
     ).hexdigest()
 
 
-def add_audit_columns(rows: list[dict[str, Any]], *, batch_id: str, source: str,
-                      entity: str, source_file: str, ingest_date: str) -> list[dict[str, Any]]:
+def add_audit_columns(
+    rows: list[dict[str, Any]],
+    *,
+    batch_id: str,
+    source: str,
+    entity: str,
+    source_file: str,
+    ingest_date: str,
+) -> list[dict[str, Any]]:
     ts = utcnow().isoformat()
     out = []
     for r in rows:
-        out.append({
-            **r,
-            "_batch_id": batch_id,
-            "_source": source,
-            "_entity": entity,
-            "_source_file": source_file,
-            "_ingest_ts": ts,
-            "_ingest_date": ingest_date,
-            "_row_hash": row_hash(r),
-        })
+        out.append(
+            {
+                **r,
+                "_batch_id": batch_id,
+                "_source": source,
+                "_entity": entity,
+                "_source_file": source_file,
+                "_ingest_ts": ts,
+                "_ingest_date": ingest_date,
+                "_row_hash": row_hash(r),
+            }
+        )
     return out
 
 
-def write_bronze(rows: list[dict[str, Any]], *, bronze_root: str, source: str,
-                 entity: str, batch_id: str, source_file: str, ingest_date: str
-                 ) -> tuple[str | None, int]:
+def write_bronze(
+    rows: list[dict[str, Any]],
+    *,
+    bronze_root: str,
+    source: str,
+    entity: str,
+    batch_id: str,
+    source_file: str,
+    ingest_date: str,
+) -> tuple[str | None, int]:
     """Write rows to Bronze Parquet; return (path, row_count). Empty -> (None, 0)."""
     if not rows:
         return None, 0
-    enriched = add_audit_columns(rows, batch_id=batch_id, source=source, entity=entity,
-                                 source_file=source_file, ingest_date=ingest_date)
+    enriched = add_audit_columns(
+        rows,
+        batch_id=batch_id,
+        source=source,
+        entity=entity,
+        source_file=source_file,
+        ingest_date=ingest_date,
+    )
     out_dir = Path(bronze_root) / source / entity / f"ingest_date={ingest_date}"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{batch_id}.parquet"

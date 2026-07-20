@@ -15,7 +15,6 @@ from datetime import date
 from pathlib import Path
 
 import pandas as pd
-
 from spark.transforms.gold import generate_dim_date
 
 
@@ -25,7 +24,8 @@ def load_bigquery(rows: list[dict], project: str, dataset: str) -> None:
     client = bigquery.Client(project=project)
     table = f"{project}.{dataset}.dim_date"
     job = client.load_table_from_json(
-        rows, table,
+        rows,
+        table,
         job_config=bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE"),
     )
     job.result()
@@ -42,8 +42,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--bq-dataset", default=None)
     args = ap.parse_args(argv)
 
-    rows = generate_dim_date(date.fromisoformat(args.start), date.fromisoformat(args.end),
-                             fiscal_start_month=args.fiscal_start_month)
+    rows = generate_dim_date(
+        date.fromisoformat(args.start),
+        date.fromisoformat(args.end),
+        fiscal_start_month=args.fiscal_start_month,
+    )
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_parquet(out, index=False)

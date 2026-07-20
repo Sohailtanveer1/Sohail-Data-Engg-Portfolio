@@ -2,11 +2,10 @@
 idempotency (checksum dedup) + watermark advance."""
 
 import pandas as pd
-
-from scb_common.metadata import JsonlMetadataStore
-
 from ingestion.extractor import Extractor
 from ingestion.landing import LocalLandingStore
+
+from scb_common.metadata import JsonlMetadataStore
 
 DS = "2026-07-19"
 
@@ -15,9 +14,7 @@ def _make_source(tmp_path):
     landing = tmp_path / "landing" / "testsrc" / DS
     landing.mkdir(parents=True)
     (landing / "widget.csv").write_text(
-        "id,updated\n"
-        "A1,2026-07-19T01:00:00\n"
-        "A2,2026-07-19T05:00:00\n",
+        "id,updated\n" "A1,2026-07-19T01:00:00\n" "A2,2026-07-19T05:00:00\n",
         encoding="utf-8",
     )
     return {
@@ -70,8 +67,8 @@ def test_land_to_bronze_with_audit_and_watermark(tmp_path):
 def test_rerun_is_idempotent_via_checksum_dedup(tmp_path):
     cfg = _make_source(tmp_path)
     ext = _extractor(tmp_path)
-    ext.run_source(cfg, DS)          # first run processes
-    res2 = ext.run_source(cfg, DS)   # second run should skip the unchanged file
+    ext.run_source(cfg, DS)  # first run processes
+    res2 = ext.run_source(cfg, DS)  # second run should skip the unchanged file
 
     assert res2.files_processed == 0
     assert res2.files_skipped == 1
@@ -82,6 +79,6 @@ def test_missing_file_is_warned_not_fatal(tmp_path):
     cfg = _make_source(tmp_path)
     cfg["entities"]["ghost"] = {"load_type": "full", "business_keys": ["id"]}
     ext = _extractor(tmp_path)
-    res = ext.run_source(cfg, DS)     # 'ghost' has no file; should not crash
+    res = ext.run_source(cfg, DS)  # 'ghost' has no file; should not crash
     assert res.status == "success"
-    assert res.files_processed == 1   # only widget
+    assert res.files_processed == 1  # only widget

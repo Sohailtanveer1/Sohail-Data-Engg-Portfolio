@@ -40,5 +40,5 @@ def test_require_reports_missing_key_trail(tmp_path):
     p = _write(tmp_path, "connection:\n  host: h\n")
     cfg = load_config(p)
     assert require(cfg, "connection", "host") == "h"
-    with pytest.raises(ConfigError, match="connection.port"):
+    with pytest.raises(ConfigError, match=r"connection\.port"):
         require(cfg, "connection", "port")

@@ -21,15 +21,22 @@ def conn_params_from_env() -> dict[str, Any]:
     }
 
 
-def read_table(schema: str, table: str, *, watermark_column: str | None = None,
-               watermark: str | None = None, conn_params: dict[str, Any] | None = None,
-               connect: Any = None) -> list[dict[str, Any]]:
+def read_table(
+    schema: str,
+    table: str,
+    *,
+    watermark_column: str | None = None,
+    watermark: str | None = None,
+    conn_params: dict[str, Any] | None = None,
+    connect: Any = None,
+) -> list[dict[str, Any]]:
     """Read wms.<table>, optionally only rows newer than ``watermark``.
 
     ``connect`` is injectable for testing (a callable returning a DB-API connection).
     """
     if connect is None:
         import psycopg2  # lazy
+
         connect = psycopg2.connect
     params = conn_params or conn_params_from_env()
 
@@ -44,6 +51,6 @@ def read_table(schema: str, table: str, *, watermark_column: str | None = None,
         with conn.cursor() as cur:
             cur.execute(sql, args)
             cols = [d[0] for d in cur.description]
-            return [dict(zip(cols, row)) for row in cur.fetchall()]
+            return [dict(zip(cols, row, strict=False)) for row in cur.fetchall()]
     finally:
         conn.close()

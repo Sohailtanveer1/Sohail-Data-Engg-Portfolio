@@ -10,12 +10,12 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 def utcnow() -> datetime:
     """UTC now, timezone-aware. Always use this instead of ``datetime.now()``."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def new_batch_id(pipeline: str, at: datetime | None = None) -> str:

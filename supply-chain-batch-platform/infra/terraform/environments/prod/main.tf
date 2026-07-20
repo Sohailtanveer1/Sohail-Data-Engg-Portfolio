@@ -199,3 +199,13 @@ module "composer" {
 
   depends_on = [module.networking, module.iam]
 }
+
+module "monitoring" {
+  source             = "../../modules/monitoring"
+  project_id         = var.project_id
+  name_prefix        = local.name_prefix
+  notification_email = var.notification_email
+  freshness_hours    = var.freshness_hours
+
+  depends_on = [module.project_services]
+}

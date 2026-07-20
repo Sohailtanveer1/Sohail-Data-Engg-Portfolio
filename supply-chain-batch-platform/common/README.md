@@ -13,5 +13,7 @@ Shared Python package (`scb_common`) used by ingestion, Spark, and Airflow.
 | `retry.py` | Exponential-backoff retry for transient I/O |
 | `metadata.py` | Batch/file/DQ audit + watermark store (in-memory & JSONL) |
 | `stores/bigquery.py` | BigQuery-backed `MetadataStore` (Phase 4; `bigquery` extra) |
+| `monitoring.py` | Data-freshness report over the audit trail (Phase 9) + CLI |
+| `logging.enable_cloud_logging` | Ship structured logs to Cloud Logging (Phase 9) |
 
 Install for dev: `pip install -e common`. Test: `pytest common/tests -q`.

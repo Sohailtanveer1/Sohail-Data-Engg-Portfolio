@@ -12,9 +12,10 @@ Evolution policy:
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 from scb_common.errors import SchemaValidationError
 
@@ -39,8 +40,10 @@ class ColumnSpec:
 
     def __post_init__(self) -> None:
         if self.dtype not in _TYPES:
-            raise ValueError(f"Unknown dtype '{self.dtype}' for column '{self.name}'. "
-                             f"Valid: {sorted(_TYPES)}")
+            raise ValueError(
+                f"Unknown dtype '{self.dtype}' for column '{self.name}'. "
+                f"Valid: {sorted(_TYPES)}"
+            )
 
 
 @dataclass
@@ -84,8 +87,9 @@ class TableSchema:
         unexpected = sorted(observed - expected)
         return missing, unexpected
 
-    def validate_rows(self, rows: list[Mapping[str, Any]], *,
-                      allow_additive: bool = True, sample: int = 1000) -> list[str]:
+    def validate_rows(
+        self, rows: list[Mapping[str, Any]], *, allow_additive: bool = True, sample: int = 1000
+    ) -> list[str]:
         """Validate a sample of rows against the contract.
 
         Returns the list of *newly observed* columns (additive evolution) when

@@ -40,8 +40,10 @@ def _write_csv(rows: list[dict], path: Path, sep: str = ",") -> None:
 
 def _write_json(rows: list[dict], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"totalSize": len(rows), "done": True, "records": rows},
-                               indent=2, default=str), encoding="utf-8")
+    path.write_text(
+        json.dumps({"totalSize": len(rows), "done": True, "records": rows}, indent=2, default=str),
+        encoding="utf-8",
+    )
 
 
 def _write_parquet(rows: list[dict], path: Path) -> None:
@@ -70,8 +72,9 @@ def _write_messy_xlsx(entities: dict[str, list[dict]], path: Path) -> None:
     wb.save(path)
 
 
-def generate_source(source: str, ref: ReferenceData, gen_date: date, out: Path,
-                    dirty: float) -> dict[str, int]:
+def generate_source(
+    source: str, ref: ReferenceData, gen_date: date, out: Path, dirty: float
+) -> dict[str, int]:
     mod = GENERATORS[source]
     entities = mod.generate(ref, gen_date, dirty_fraction=dirty)
     ds = gen_date.isoformat()
@@ -103,14 +106,13 @@ def generate_source(source: str, ref: ReferenceData, gen_date: date, out: Path,
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Generate local source-system data.")
-    ap.add_argument("--source", default="all",
-                    choices=["all", *GENERATORS.keys()])
-    ap.add_argument("--date", default=date.today().isoformat(),
-                    help="generation date YYYY-MM-DD")
+    ap.add_argument("--source", default="all", choices=["all", *GENERATORS.keys()])
+    ap.add_argument("--date", default=date.today().isoformat(), help="generation date YYYY-MM-DD")
     ap.add_argument("--out", default="data/landing", help="output root directory")
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--dirty", type=float, default=0.03,
-                    help="fraction of deliberately bad rows [0..1]")
+    ap.add_argument(
+        "--dirty", type=float, default=0.03, help="fraction of deliberately bad rows [0..1]"
+    )
     args = ap.parse_args(argv)
 
     gen_date = datetime.strptime(args.date, "%Y-%m-%d").date()

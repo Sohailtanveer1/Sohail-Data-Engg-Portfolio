@@ -16,8 +16,13 @@ def _on(business_keys: list[str], left: str = "t", right: str = "s") -> str:
     return " AND ".join(f"{left}.`{k}` = {right}.`{k}`" for k in business_keys)
 
 
-def build_scd1_merge_sql(target: str, source: str, business_keys: list[str],
-                         update_columns: list[str], insert_columns: list[str]) -> str:
+def build_scd1_merge_sql(
+    target: str,
+    source: str,
+    business_keys: list[str],
+    update_columns: list[str],
+    insert_columns: list[str],
+) -> str:
     """SCD1 (overwrite): update matched rows in place, insert new ones."""
     set_clause = ", ".join(f"t.`{c}` = s.`{c}`" for c in update_columns)
     insert_cols = ", ".join(f"`{c}`" for c in insert_columns)
@@ -42,8 +47,9 @@ def build_scd2_close_sql(target: str, source: str, business_keys: list[str]) -> 
     )
 
 
-def build_scd2_insert_sql(target: str, source: str, business_keys: list[str],
-                          insert_columns: list[str]) -> str:
+def build_scd2_insert_sql(
+    target: str, source: str, business_keys: list[str], insert_columns: list[str]
+) -> str:
     """Step 2: insert brand-new keys and changed versions (open rows)."""
     cols = ", ".join(f"`{c}`" for c in insert_columns)
     select = ", ".join(f"s.`{c}`" for c in insert_columns)
@@ -57,8 +63,9 @@ def build_scd2_insert_sql(target: str, source: str, business_keys: list[str],
     )
 
 
-def build_scd2_statements(target: str, source: str, business_keys: list[str],
-                          insert_columns: list[str]) -> list[str]:
+def build_scd2_statements(
+    target: str, source: str, business_keys: list[str], insert_columns: list[str]
+) -> list[str]:
     """The full SCD2 sequence: close-then-insert (run in order)."""
     return [
         build_scd2_close_sql(target, source, business_keys),
@@ -68,15 +75,24 @@ def build_scd2_statements(target: str, source: str, business_keys: list[str],
 
 # ---- Spark appliers (require a SparkSession; compile-checked, run on JDK/Dataproc) ----
 
-def apply_scd1(spark, df, *, target: str, business_keys: list[str],
-               update_columns: list[str], insert_columns: list[str]) -> None:
+
+def apply_scd1(
+    spark,
+    df,
+    *,
+    target: str,
+    business_keys: list[str],
+    update_columns: list[str],
+    insert_columns: list[str],
+) -> None:
     view = "scd1_src"
     df.createOrReplaceTempView(view)
     spark.sql(build_scd1_merge_sql(target, view, business_keys, update_columns, insert_columns))
 
 
-def apply_scd2(spark, df, *, target: str, business_keys: list[str],
-               insert_columns: list[str]) -> None:
+def apply_scd2(
+    spark, df, *, target: str, business_keys: list[str], insert_columns: list[str]
+) -> None:
     view = "scd2_src"
     df.createOrReplaceTempView(view)
     for stmt in build_scd2_statements(target, view, business_keys, insert_columns):

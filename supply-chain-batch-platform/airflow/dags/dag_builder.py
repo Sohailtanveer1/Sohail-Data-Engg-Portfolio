@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 @dataclass
 class TaskSpec:
     task_id: str
-    kind: str                 # marker | sensor | ingest | silver | gold
+    kind: str  # marker | sensor | ingest | silver | gold
     group: str | None = None
     upstream: list[str] = field(default_factory=list)
     params: dict = field(default_factory=dict)
@@ -22,48 +22,56 @@ class TaskSpec:
 
 def build_pipeline(
     sources: list[str],
-    silver_entities: dict[str, str],          # entity -> source
-    gold_entities: dict[str, list[str]],      # entity -> [silver entity deps]
+    silver_entities: dict[str, str],  # entity -> source
+    gold_entities: dict[str, list[str]],  # entity -> [silver entity deps]
     file_based_sources: set[str] | None = None,
 ) -> list[TaskSpec]:
     file_based = file_based_sources or set()
     specs: list[TaskSpec] = [TaskSpec("start", "marker")]
 
     # dim_date runs independently off start.
-    specs.append(TaskSpec("dim_date", "gold", group="calendar",
-                          upstream=["start"], params={"entity": "dim_date"}))
+    specs.append(
+        TaskSpec(
+            "dim_date", "gold", group="calendar", upstream=["start"], params={"entity": "dim_date"}
+        )
+    )
 
     ingest_task: dict[str, str] = {}
     for src in sources:
         if src in file_based:
             sensor_id = f"wait_{src}"
-            specs.append(TaskSpec(sensor_id, "sensor", group=src, upstream=["start"],
-                                  params={"source": src}))
+            specs.append(
+                TaskSpec(sensor_id, "sensor", group=src, upstream=["start"], params={"source": src})
+            )
             up = [sensor_id]
         else:
             up = ["start"]
         ingest_id = f"ingest_{src}"
-        specs.append(TaskSpec(ingest_id, "ingest", group=src, upstream=up,
-                              params={"source": src}))
+        specs.append(TaskSpec(ingest_id, "ingest", group=src, upstream=up, params={"source": src}))
         ingest_task[src] = ingest_id
 
     silver_task: dict[str, str] = {}
     for entity, src in silver_entities.items():
         sid = f"silver_{entity}"
-        specs.append(TaskSpec(sid, "silver", group=src, upstream=[ingest_task[src]],
-                              params={"entity": entity}))
+        specs.append(
+            TaskSpec(
+                sid, "silver", group=src, upstream=[ingest_task[src]], params={"entity": entity}
+            )
+        )
         silver_task[entity] = sid
 
     gold_ids: list[str] = []
     for entity, deps in gold_entities.items():
         gid = f"gold_{entity}"
         upstream = [silver_task[d] for d in deps if d in silver_task]
-        specs.append(TaskSpec(gid, "gold", group="gold", upstream=upstream or ["start"],
-                              params={"entity": entity}))
+        specs.append(
+            TaskSpec(
+                gid, "gold", group="gold", upstream=upstream or ["start"], params={"entity": entity}
+            )
+        )
         gold_ids.append(gid)
 
-    specs.append(TaskSpec("end", "marker",
-                          upstream=gold_ids + ["dim_date"]))
+    specs.append(TaskSpec("end", "marker", upstream=[*gold_ids, "dim_date"]))
     return specs
 
 

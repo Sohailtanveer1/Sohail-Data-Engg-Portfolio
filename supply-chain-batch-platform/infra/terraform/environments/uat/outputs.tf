@@ -39,3 +39,8 @@ output "composer_dag_prefix" {
   description = "GCS prefix to deploy DAGs to (empty unless enabled)."
   value       = module.composer.dag_gcs_prefix
 }
+
+output "alert_policies" {
+  description = "Monitoring alert policies created."
+  value       = module.monitoring.alert_policy_names
+}

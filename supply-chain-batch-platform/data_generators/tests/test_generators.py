@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-
 from data_generators import salesforce, sap_erp, supplier_portal, tms, wms
 from data_generators.reference import ReferenceData
 

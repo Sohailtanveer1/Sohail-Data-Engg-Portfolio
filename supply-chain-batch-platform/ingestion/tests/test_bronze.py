@@ -1,5 +1,4 @@
 import pandas as pd
-
 from ingestion.bronze import AUDIT_COLS, add_audit_columns, row_hash, write_bronze
 
 
@@ -11,8 +10,14 @@ def test_row_hash_ignores_audit_columns_and_is_stable():
 
 
 def test_add_audit_columns_present():
-    rows = add_audit_columns([{"x": "1"}], batch_id="b1", source="sap",
-                             entity="po", source_file="f.csv", ingest_date="2026-07-19")
+    rows = add_audit_columns(
+        [{"x": "1"}],
+        batch_id="b1",
+        source="sap",
+        entity="po",
+        source_file="f.csv",
+        ingest_date="2026-07-19",
+    )
     for col in AUDIT_COLS:
         assert col in rows[0]
     assert rows[0]["_source"] == "sap"
@@ -21,8 +26,15 @@ def test_add_audit_columns_present():
 
 def test_write_bronze_creates_parquet_with_audit(tmp_path):
     rows = [{"id": "A1", "v": "10"}, {"id": "A2", "v": "20"}]
-    path, n = write_bronze(rows, bronze_root=str(tmp_path), source="src", entity="ent",
-                           batch_id="b1", source_file="f.csv", ingest_date="2026-07-19")
+    path, n = write_bronze(
+        rows,
+        bronze_root=str(tmp_path),
+        source="src",
+        entity="ent",
+        batch_id="b1",
+        source_file="f.csv",
+        ingest_date="2026-07-19",
+    )
     assert n == 2
     assert "ingest_date=2026-07-19" in path
     df = pd.read_parquet(path)
@@ -32,6 +44,13 @@ def test_write_bronze_creates_parquet_with_audit(tmp_path):
 
 
 def test_write_bronze_empty_is_noop(tmp_path):
-    path, n = write_bronze([], bronze_root=str(tmp_path), source="s", entity="e",
-                           batch_id="b1", source_file="f", ingest_date="2026-07-19")
+    path, n = write_bronze(
+        [],
+        bronze_root=str(tmp_path),
+        source="s",
+        entity="e",
+        batch_id="b1",
+        source_file="f",
+        ingest_date="2026-07-19",
+    )
     assert path is None and n == 0

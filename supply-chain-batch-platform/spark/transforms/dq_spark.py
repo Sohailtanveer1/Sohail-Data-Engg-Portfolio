@@ -57,10 +57,16 @@ def evaluate_spark(df, rules, *, key_column=None, fk_sets=None):
     results: list[RuleResult] = []
     for i, rule, _ in pass_cols:
         failed = df.filter(~F.col(_pass_col(i))).count()
-        results.append(RuleResult(
-            rule=rule.name, column=rule.column, severity=rule.severity,
-            passed=total - failed, failed=failed, threshold=rule.threshold,
-        ))
+        results.append(
+            RuleResult(
+                rule=rule.name,
+                column=rule.column,
+                severity=rule.severity,
+                passed=total - failed,
+                failed=failed,
+                threshold=rule.threshold,
+            )
+        )
 
     drop_cols = [_pass_col(i) for i, _, _ in pass_cols]
     clean = df.filter(F.col("_dq_ok")).drop("_dq_ok", *drop_cols)

@@ -39,10 +39,21 @@ def test_write_dq_batches_rows_and_skips_empty():
     store, be = _store()
     store.write_dq([])
     assert be.inserts == []
-    store.write_dq([
-        DQResultRecord(batch_id="b1", entity="po", rule="NotNull(x)", severity="error",
-                       passed=9, failed=1, threshold=0.0, breached=True, sample_keys=["k"]),
-    ])
+    store.write_dq(
+        [
+            DQResultRecord(
+                batch_id="b1",
+                entity="po",
+                rule="NotNull(x)",
+                severity="error",
+                passed=9,
+                failed=1,
+                threshold=0.0,
+                breached=True,
+                sample_keys=["k"],
+            ),
+        ]
+    )
     table, rows = be.inserts[0]
     assert table == "proj.scb_metadata_dev.dq_results"
     assert rows[0]["failed"] == 1
@@ -52,8 +63,9 @@ def test_insert_error_raises():
     store, be = _store()
     be.fail = True
     try:
-        store.write_file(FileAudit(batch_id="b1", source="sap", filename="f.csv",
-                                   checksum="c", size_bytes=1))
+        store.write_file(
+            FileAudit(batch_id="b1", source="sap", filename="f.csv", checksum="c", size_bytes=1)
+        )
         raised = False
     except RuntimeError:
         raised = True

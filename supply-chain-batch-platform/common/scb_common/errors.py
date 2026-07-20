@@ -19,9 +19,14 @@ class ConfigError(ScbError):
 class SchemaValidationError(ScbError):
     """Incoming data does not satisfy its registered schema contract."""
 
-    def __init__(self, message: str, *, missing: list[str] | None = None,
-                 unexpected: list[str] | None = None,
-                 type_errors: list[str] | None = None) -> None:
+    def __init__(
+        self,
+        message: str,
+        *,
+        missing: list[str] | None = None,
+        unexpected: list[str] | None = None,
+        type_errors: list[str] | None = None,
+    ) -> None:
         super().__init__(message)
         self.missing = missing or []
         self.unexpected = unexpected or []

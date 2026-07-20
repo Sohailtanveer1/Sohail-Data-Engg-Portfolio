@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from scb_common.context import BatchContext, new_batch_id
 
 
 def test_batch_id_is_sortable_and_unique():
-    at = datetime(2026, 7, 19, 18, 30, 0, tzinfo=timezone.utc)
+    at = datetime(2026, 7, 19, 18, 30, 0, tzinfo=UTC)
     a = new_batch_id("scb_sap_daily", at)
     b = new_batch_id("scb_sap_daily", at)
     assert a.startswith("scb_sap_daily-20260719T183000Z-")

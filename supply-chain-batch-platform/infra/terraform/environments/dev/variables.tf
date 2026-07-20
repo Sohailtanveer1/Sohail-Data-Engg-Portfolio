@@ -67,3 +67,15 @@ variable "enable_composer" {
   description = "Create the Cloud Composer environment (ADR-0003). Default OFF — cost guard."
   default     = false
 }
+
+variable "notification_email" {
+  type        = string
+  description = "Email for monitoring alerts (empty = alerts without a channel)."
+  default     = ""
+}
+
+variable "freshness_hours" {
+  type        = number
+  description = "Alert if no successful pipeline run within this many hours."
+  default     = 26
+}

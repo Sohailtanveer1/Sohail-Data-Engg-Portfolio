@@ -124,8 +124,9 @@ def surrogate_key_expr(business_keys: list[str], version_col: str | None = None)
     return f"sha2(concat_ws('||', {parts}), 256)"
 
 
-def build_create_iceberg_table(table: str, columns: list[tuple[str, str]],
-                               partition_by: list[str] | None = None) -> str:
+def build_create_iceberg_table(
+    table: str, columns: list[tuple[str, str]], partition_by: list[str] | None = None
+) -> str:
     """CREATE TABLE IF NOT EXISTS ... USING iceberg (pure/testable)."""
     cols = ", ".join(f"{col(n)} {t}" for n, t in columns)
     ddl = f"CREATE TABLE IF NOT EXISTS {table} ({cols}) USING iceberg"
@@ -134,8 +135,7 @@ def build_create_iceberg_table(table: str, columns: list[tuple[str, str]],
     return ddl
 
 
-def dedup_row_number_expr(business_keys: list[str], order_by: str,
-                          descending: bool = True) -> str:
+def dedup_row_number_expr(business_keys: list[str], order_by: str, descending: bool = True) -> str:
     """row_number() window that ranks rows within each business key; keep rank=1
     (latest by ``order_by``) to deduplicate."""
     partition = ", ".join(col(k) for k in business_keys)

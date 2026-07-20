@@ -21,7 +21,7 @@ class FileArrivalSensor(BaseSensorOperator):
         super().__init__(**kwargs)
         self.path = path
 
-    def poke(self, context) -> bool:  # noqa: D401
+    def poke(self, context) -> bool:
         self.log.info("Checking for source readiness at %s", self.path)
         if self.path.startswith("gs://"):
             from google.cloud import storage

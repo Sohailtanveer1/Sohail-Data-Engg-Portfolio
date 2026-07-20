@@ -10,14 +10,15 @@ This is the **batch** counterpart to the sibling
 platform. Where that project answers *"what is happening right now?"*, this one
 answers *"what happened, at scale, reliably, every day — and can I trust it?"*
 
-> **Status: Phase 8 — Orchestration built** (Phases 1–7 approved).
-> Full pipeline is coded and orchestrated: a metadata-driven Airflow DAG runs
-> ingest → Bronze → Silver (Iceberg, DQ, SCD1/SCD2) → Gold star → BigQuery, ready
-> to deploy to a guarded **Cloud Composer** env. **87 tests green**; DQ proven on
-> real Bronze (31/1238 quarantined), `dim_date` built for real (1,461 rows), all
-> Terraform validated across dev/uat/prod.
+> **Status: Phase 10 — CI/CD built** (Phases 1–9 approved).
+> The whole platform now sits behind an automated gate: GitHub Actions runs
+> format/lint/type/**94 tests**/`terraform validate`/DAG validation on every PR,
+> with keyless (WIF) deploy to dev. Repo is CI-clean locally (black/ruff/pytest/
+> tf-fmt all green). Full pipeline: ingest → Bronze → Silver (Iceberg, DQ, SCD) →
+> Gold → BigQuery, orchestrated by Airflow → guarded Composer, observable via
+> log-metrics + alerts.
 > _(Spark/Airflow execution needs a JDK/Composer — see docs/phase-06–08.)_ See
-> [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) and [docs/](docs/) (`phase-02-*` … `phase-08-*`).
+> [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) and [docs/](docs/) (`phase-02-*` … `phase-10-*`).
 
 ---
 

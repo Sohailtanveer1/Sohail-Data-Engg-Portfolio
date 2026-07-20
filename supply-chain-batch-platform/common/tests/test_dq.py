@@ -77,7 +77,8 @@ def test_threshold_tolerance_allows_small_failure_fraction():
 
 
 def test_rule_from_dict_factory():
-    rule = rule_from_dict({"type": "allowed_values", "column": "currency",
-                           "allowed": ["USD", "CAD"]})
+    rule = rule_from_dict(
+        {"type": "allowed_values", "column": "currency", "allowed": ["USD", "CAD"]}
+    )
     report = evaluate(ROWS, [rule])
     assert report.results[0].failed == 1

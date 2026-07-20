@@ -25,6 +25,7 @@ _VAR = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(?::([^}]*))?\}")
 def _interpolate(value: Any) -> Any:
     """Recursively replace ``${VAR}`` / ``${VAR:default}`` in strings."""
     if isinstance(value, str):
+
         def sub(m: re.Match[str]) -> str:
             name, default = m.group(1), m.group(2)
             env = os.environ.get(name)
@@ -33,6 +34,7 @@ def _interpolate(value: Any) -> Any:
             if default is not None:
                 return default
             raise ConfigError(f"Environment variable '{name}' is not set and has no default")
+
         return _VAR.sub(sub, value)
     if isinstance(value, dict):
         return {k: _interpolate(v) for k, v in value.items()}
@@ -58,7 +60,7 @@ def load_config(path: str | Path) -> dict[str, Any]:
 def require(cfg: dict[str, Any], *keys: str) -> Any:
     """Fetch a nested key path, raising ConfigError with a clear trail if absent.
 
-        require(cfg, "connection", "host")
+    require(cfg, "connection", "host")
     """
     node: Any = cfg
     trail: list[str] = []

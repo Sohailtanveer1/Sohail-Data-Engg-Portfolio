@@ -1,5 +1,14 @@
 """Unit tests for the pure Spark-SQL builders (no SparkSession needed)."""
 
+from spark.transforms.expressions import (
+    build_create_iceberg_table,
+    cast_select_exprs,
+    dedup_row_number_expr,
+    row_hash_expr,
+    rule_to_condition,
+    surrogate_key_expr,
+)
+
 from scb_common.dq import (
     AllowedValues,
     NonNegative,
@@ -8,14 +17,6 @@ from scb_common.dq import (
     ValidDate,
 )
 from scb_common.schema import ColumnSpec, TableSchema
-from spark.transforms.expressions import (
-    build_create_iceberg_table,
-    cast_select_exprs,
-    dedup_row_number_expr,
-    rule_to_condition,
-    row_hash_expr,
-    surrogate_key_expr,
-)
 
 SCHEMA = TableSchema(
     entity="po",
@@ -35,7 +36,10 @@ def test_cast_select_exprs_types_and_null_handling():
 
 
 def test_rule_to_condition_not_null():
-    assert rule_to_condition(NotNull("material_id")) == "(`material_id` IS NOT NULL AND `material_id` <> '')"
+    assert (
+        rule_to_condition(NotNull("material_id"))
+        == "(`material_id` IS NOT NULL AND `material_id` <> '')"
+    )
 
 
 def test_rule_to_condition_non_negative_allows_null_rejects_text():
@@ -51,7 +55,10 @@ def test_rule_to_condition_allowed_values_quotes_and_sorts():
 
 
 def test_rule_to_condition_valid_date():
-    assert rule_to_condition(ValidDate("order_date")) == "(`order_date` IS NULL OR to_date(`order_date`) IS NOT NULL)"
+    assert (
+        rule_to_condition(ValidDate("order_date"))
+        == "(`order_date` IS NULL OR to_date(`order_date`) IS NOT NULL)"
+    )
 
 
 def test_unique_and_fk_return_none():
@@ -60,7 +67,10 @@ def test_unique_and_fk_return_none():
 
 def test_row_hash_and_surrogate_are_deterministic_sha256():
     h = row_hash_expr(["a", "b"])
-    assert h == "sha2(concat_ws('||', coalesce(cast(`a` as string), ''), coalesce(cast(`b` as string), '')), 256)"
+    assert (
+        h
+        == "sha2(concat_ws('||', coalesce(cast(`a` as string), ''), coalesce(cast(`b` as string), '')), 256)"
+    )
     sk = surrogate_key_expr(["material_id"], version_col="effective_from")
     assert "effective_from" in sk and sk.startswith("sha2(")
 
@@ -71,7 +81,10 @@ def test_dedup_window_expr():
 
 
 def test_create_iceberg_table_ddl():
-    ddl = build_create_iceberg_table("scb.silver.x", [("id", "string"), ("v", "int")],
-                                     partition_by=["id"])
-    assert ddl == ("CREATE TABLE IF NOT EXISTS scb.silver.x (`id` string, `v` int) "
-                   "USING iceberg PARTITIONED BY (`id`)")
+    ddl = build_create_iceberg_table(
+        "scb.silver.x", [("id", "string"), ("v", "int")], partition_by=["id"]
+    )
+    assert ddl == (
+        "CREATE TABLE IF NOT EXISTS scb.silver.x (`id` string, `v` int) "
+        "USING iceberg PARTITIONED BY (`id`)"
+    )

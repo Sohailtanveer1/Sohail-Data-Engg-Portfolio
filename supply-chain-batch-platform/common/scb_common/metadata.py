@@ -25,7 +25,7 @@ class BatchAudit:
     pipeline: str
     source: str
     destination: str
-    status: str = "running"           # running | success | failed
+    status: str = "running"  # running | success | failed
     rows_read: int = 0
     rows_written: int = 0
     rows_rejected: int = 0
@@ -42,7 +42,7 @@ class FileAudit:
     filename: str
     checksum: str
     size_bytes: int
-    status: str = "landed"            # landed | processed | skipped_duplicate | failed
+    status: str = "landed"  # landed | processed | skipped_duplicate | failed
     seen_at: str = field(default_factory=lambda: utcnow().isoformat())
 
 

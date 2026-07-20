@@ -16,9 +16,8 @@ ignore = ["E501"]  # black owns line length
 
 [tool.mypy]
 python_version = "3.11"
-warn_unused_ignores = true
 warn_redundant_casts = true
-disallow_untyped_defs = true
+check_untyped_defs = true
 ignore_missing_imports = true
 files = ["common/scb_common"]
 

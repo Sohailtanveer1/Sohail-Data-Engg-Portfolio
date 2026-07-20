@@ -1,7 +1,6 @@
 """Unit tests for the pure DAG builder (no Airflow needed)."""
 
 import pytest
-
 from dag_builder import TaskSpec, build_pipeline, edges, validate_acyclic
 
 SOURCES = ["sap_erp", "wms"]
@@ -16,14 +15,22 @@ def _spec():
 
 def test_expected_tasks_present():
     ids = {t.task_id for t in _spec()}
-    assert {"start", "end", "dim_date", "wait_sap_erp", "ingest_sap_erp",
-            "ingest_wms", "silver_material_master", "silver_inventory",
-            "gold_fact_purchase_order"} <= ids
+    assert {
+        "start",
+        "end",
+        "dim_date",
+        "wait_sap_erp",
+        "ingest_sap_erp",
+        "ingest_wms",
+        "silver_material_master",
+        "silver_inventory",
+        "gold_fact_purchase_order",
+    } <= ids
 
 
 def test_jdbc_source_has_no_sensor():
     ids = {t.task_id for t in _spec()}
-    assert "wait_wms" not in ids           # wms is not file-based
+    assert "wait_wms" not in ids  # wms is not file-based
     assert "wait_sap_erp" in ids
 
 
@@ -47,7 +54,6 @@ def test_dangling_upstream_detected():
 
 
 def test_cycle_detected():
-    cyclic = [TaskSpec("a", "marker", upstream=["b"]),
-              TaskSpec("b", "marker", upstream=["a"])]
+    cyclic = [TaskSpec("a", "marker", upstream=["b"]), TaskSpec("b", "marker", upstream=["a"])]
     with pytest.raises(ValueError, match="Cycle"):
         validate_acyclic(cyclic)

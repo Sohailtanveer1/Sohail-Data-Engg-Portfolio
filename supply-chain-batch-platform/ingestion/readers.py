@@ -43,14 +43,16 @@ def read_excel_sheet(data: bytes, *, sheet: str, skiprows: int = 1) -> list[dict
     Fully-blank trailing rows are dropped. Values stay as-read (numbers may arrive
     as text) so the DQ framework can catch the quirks in Silver.
     """
-    df = pd.read_excel(io.BytesIO(data), sheet_name=sheet, skiprows=skiprows,
-                       engine="openpyxl", dtype=object)
+    df = pd.read_excel(
+        io.BytesIO(data), sheet_name=sheet, skiprows=skiprows, engine="openpyxl", dtype=object
+    )
     df = df.dropna(how="all")
     return _df_to_rows(df)
 
 
-def read_entity(data: bytes, *, fmt: str, delimiter: str = ",", sheet: str | None = None
-                ) -> list[dict[str, Any]]:
+def read_entity(
+    data: bytes, *, fmt: str, delimiter: str = ",", sheet: str | None = None
+) -> list[dict[str, Any]]:
     """Dispatch to the right reader by declared format."""
     if fmt == "csv":
         return read_csv(data, delimiter=delimiter)
