@@ -1,0 +1,5 @@
+[
+  {"name":"entity","type":"STRING","mode":"REQUIRED","description":"Entity whose incremental progress this tracks"},
+  {"name":"watermark_value","type":"STRING","mode":"NULLABLE","description":"Last processed value (max updated_ts / id / partition date)"},
+  {"name":"updated_at","type":"TIMESTAMP","mode":"NULLABLE"}
+]

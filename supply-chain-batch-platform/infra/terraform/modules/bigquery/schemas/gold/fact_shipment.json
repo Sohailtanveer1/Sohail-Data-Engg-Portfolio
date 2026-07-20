@@ -1,0 +1,16 @@
+[
+  {"name":"shipment_sk","type":"STRING","mode":"REQUIRED"},
+  {"name":"shipment_id","type":"STRING","mode":"REQUIRED"},
+  {"name":"carrier_sk","type":"STRING","mode":"NULLABLE"},
+  {"name":"origin_warehouse_sk","type":"STRING","mode":"NULLABLE"},
+  {"name":"customer_sk","type":"STRING","mode":"NULLABLE"},
+  {"name":"ship_date","type":"DATE","mode":"NULLABLE","description":"Partition column"},
+  {"name":"delivery_date","type":"DATE","mode":"NULLABLE"},
+  {"name":"weight_lb","type":"FLOAT64","mode":"NULLABLE"},
+  {"name":"freight_cost","type":"NUMERIC","mode":"NULLABLE"},
+  {"name":"transit_days","type":"INT64","mode":"NULLABLE"},
+  {"name":"promised_days","type":"INT64","mode":"NULLABLE"},
+  {"name":"on_time","type":"BOOL","mode":"NULLABLE"},
+  {"name":"delivery_status","type":"STRING","mode":"NULLABLE"},
+  {"name":"batch_id","type":"STRING","mode":"NULLABLE"}
+]

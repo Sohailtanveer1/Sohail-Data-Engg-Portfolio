@@ -1,0 +1,10 @@
+[
+  {"name":"material_sk","type":"STRING","mode":"REQUIRED"},
+  {"name":"warehouse_sk","type":"STRING","mode":"REQUIRED"},
+  {"name":"snapshot_date","type":"DATE","mode":"REQUIRED","description":"Partition column; grain = material x warehouse x day"},
+  {"name":"snapshot_date_key","type":"INT64","mode":"NULLABLE"},
+  {"name":"on_hand_qty","type":"INT64","mode":"NULLABLE","description":"SEMI-ADDITIVE: do not SUM across days"},
+  {"name":"on_hand_value","type":"NUMERIC","mode":"NULLABLE"},
+  {"name":"days_of_supply","type":"FLOAT64","mode":"NULLABLE"},
+  {"name":"batch_id","type":"STRING","mode":"NULLABLE"}
+]

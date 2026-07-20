@@ -1,0 +1,11 @@
+[
+  {"name":"material_sk","type":"STRING","mode":"REQUIRED"},
+  {"name":"warehouse_sk","type":"STRING","mode":"REQUIRED"},
+  {"name":"valuation_date","type":"DATE","mode":"REQUIRED","description":"Partition column"},
+  {"name":"valuation_date_key","type":"INT64","mode":"NULLABLE"},
+  {"name":"qty_on_hand","type":"INT64","mode":"NULLABLE"},
+  {"name":"std_cost","type":"NUMERIC","mode":"NULLABLE"},
+  {"name":"valuation_amount","type":"NUMERIC","mode":"NULLABLE"},
+  {"name":"currency","type":"STRING","mode":"NULLABLE"},
+  {"name":"batch_id","type":"STRING","mode":"NULLABLE"}
+]

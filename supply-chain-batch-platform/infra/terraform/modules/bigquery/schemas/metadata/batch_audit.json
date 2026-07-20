@@ -1,0 +1,14 @@
+[
+  {"name":"batch_id","type":"STRING","mode":"REQUIRED","description":"Run correlation key"},
+  {"name":"pipeline","type":"STRING","mode":"NULLABLE"},
+  {"name":"source","type":"STRING","mode":"NULLABLE"},
+  {"name":"destination","type":"STRING","mode":"NULLABLE"},
+  {"name":"status","type":"STRING","mode":"NULLABLE","description":"running | success | failed"},
+  {"name":"rows_read","type":"INT64","mode":"NULLABLE"},
+  {"name":"rows_written","type":"INT64","mode":"NULLABLE"},
+  {"name":"rows_rejected","type":"INT64","mode":"NULLABLE"},
+  {"name":"started_at","type":"TIMESTAMP","mode":"NULLABLE"},
+  {"name":"ended_at","type":"TIMESTAMP","mode":"NULLABLE"},
+  {"name":"duration_s","type":"FLOAT64","mode":"NULLABLE"},
+  {"name":"error","type":"STRING","mode":"NULLABLE"}
+]

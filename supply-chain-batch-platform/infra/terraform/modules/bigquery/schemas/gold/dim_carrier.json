@@ -1,0 +1,8 @@
+[
+  {"name":"carrier_sk","type":"STRING","mode":"REQUIRED"},
+  {"name":"carrier_scac","type":"STRING","mode":"REQUIRED"},
+  {"name":"carrier_name","type":"STRING","mode":"NULLABLE"},
+  {"name":"mode","type":"STRING","mode":"NULLABLE"},
+  {"name":"updated_at","type":"TIMESTAMP","mode":"NULLABLE"},
+  {"name":"batch_id","type":"STRING","mode":"NULLABLE"}
+]

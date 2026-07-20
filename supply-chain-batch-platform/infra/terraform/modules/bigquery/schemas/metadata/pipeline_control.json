@@ -1,0 +1,10 @@
+[
+  {"name":"pipeline_id","type":"STRING","mode":"REQUIRED","description":"Unique pipeline/entity id, e.g. sap_purchase_order"},
+  {"name":"source","type":"STRING","mode":"REQUIRED","description":"Source system key"},
+  {"name":"entity","type":"STRING","mode":"REQUIRED","description":"Entity/table name"},
+  {"name":"load_type","type":"STRING","mode":"REQUIRED","description":"full | incremental"},
+  {"name":"target_layer","type":"STRING","mode":"NULLABLE","description":"bronze | silver | gold"},
+  {"name":"enabled","type":"BOOL","mode":"REQUIRED","description":"Whether the pipeline is active"},
+  {"name":"schedule","type":"STRING","mode":"NULLABLE","description":"Cron/cadence hint"},
+  {"name":"updated_at","type":"TIMESTAMP","mode":"NULLABLE"}
+]

@@ -1,0 +1,8 @@
+[
+  {"name":"source","type":"STRING","mode":"REQUIRED","description":"Source system key"},
+  {"name":"source_type","type":"STRING","mode":"REQUIRED","description":"sftp | rest | jdbc | gcs"},
+  {"name":"path_or_endpoint","type":"STRING","mode":"NULLABLE","description":"Path/URL pattern"},
+  {"name":"format","type":"STRING","mode":"NULLABLE","description":"csv | json | parquet | xlsx | jdbc"},
+  {"name":"secret_ref","type":"STRING","mode":"NULLABLE","description":"Secret Manager secret name for credentials"},
+  {"name":"updated_at","type":"TIMESTAMP","mode":"NULLABLE"}
+]

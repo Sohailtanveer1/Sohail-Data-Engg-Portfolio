@@ -24,3 +24,8 @@ output "secret_ids" {
 output "project_number" {
   value = data.google_project.this.number
 }
+
+output "bigquery_datasets" {
+  description = "Created BigQuery dataset ids."
+  value       = module.bigquery.dataset_ids
+}

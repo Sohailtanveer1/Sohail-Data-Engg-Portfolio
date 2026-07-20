@@ -14,6 +14,7 @@ dependencies = [
 [project.optional-dependencies]
 # Heavy engines are optional so the core stays dependency-light and fast to test.
 spark = ["pyspark>=3.5"]
+bigquery = ["google-cloud-bigquery>=3.25"]
 
 [tool.setuptools.packages.find]
 include = ["scb_common*"]

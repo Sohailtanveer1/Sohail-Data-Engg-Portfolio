@@ -9,5 +9,6 @@ subnet_cidr            = "10.50.0.0/20"
 composer_pods_cidr     = "10.60.0.0/16"
 composer_services_cidr = "10.61.0.0/20"
 
-budget_amount         = 100
-force_destroy_buckets = false
+budget_amount                = 100
+force_destroy_buckets        = false
+bigquery_deletion_protection = true

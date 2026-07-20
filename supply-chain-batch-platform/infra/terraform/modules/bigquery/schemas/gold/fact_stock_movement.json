@@ -1,0 +1,10 @@
+[
+  {"name":"movement_sk","type":"STRING","mode":"REQUIRED"},
+  {"name":"movement_id","type":"STRING","mode":"REQUIRED"},
+  {"name":"material_sk","type":"STRING","mode":"NULLABLE"},
+  {"name":"warehouse_sk","type":"STRING","mode":"NULLABLE"},
+  {"name":"movement_date","type":"DATE","mode":"NULLABLE","description":"Partition column"},
+  {"name":"movement_type","type":"STRING","mode":"NULLABLE"},
+  {"name":"move_qty","type":"INT64","mode":"NULLABLE","description":"Signed (+ in / - out)"},
+  {"name":"batch_id","type":"STRING","mode":"NULLABLE"}
+]

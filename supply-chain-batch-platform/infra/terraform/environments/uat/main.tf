@@ -148,3 +148,38 @@ module "budget" {
 
   depends_on = [module.project_services]
 }
+
+module "bigquery" {
+  source              = "../../modules/bigquery"
+  project_id          = var.project_id
+  location            = var.bigquery_location
+  labels              = local.labels
+  deletion_protection = var.bigquery_deletion_protection
+
+  datasets = {
+    metadata = {
+      dataset_id  = "scb_metadata_${var.env}"
+      description = "Control / audit / watermark / DQ / schema-registry tables"
+    }
+    gold = {
+      dataset_id  = "scb_gold_${var.env}"
+      description = "Kimball star schema (conformed dims + facts) served to Looker"
+    }
+  }
+
+  # Partition facts by their event date; cluster by common filter keys. Metadata
+  # audit tables partition by their timestamp so retention/queries stay cheap.
+  table_options = {
+    "gold/fact_purchase_order"      = { partition_field = "order_date", clustering = ["material_sk", "warehouse_sk"] }
+    "gold/fact_goods_receipt"       = { partition_field = "receipt_date", clustering = ["material_sk", "warehouse_sk"] }
+    "gold/fact_inventory_snapshot"  = { partition_field = "snapshot_date", clustering = ["warehouse_sk", "material_sk"] }
+    "gold/fact_stock_movement"      = { partition_field = "movement_date", clustering = ["material_sk", "warehouse_sk"] }
+    "gold/fact_inventory_valuation" = { partition_field = "valuation_date", clustering = ["material_sk", "warehouse_sk"] }
+    "gold/fact_shipment"            = { partition_field = "ship_date", clustering = ["carrier_sk", "origin_warehouse_sk"] }
+    "metadata/batch_audit"          = { partition_field = "started_at", clustering = ["pipeline", "status"] }
+    "metadata/file_audit"           = { partition_field = "seen_at", clustering = ["source", "checksum"] }
+    "metadata/dq_results"           = { partition_field = "at", clustering = ["entity", "rule"] }
+  }
+
+  depends_on = [module.project_services]
+}

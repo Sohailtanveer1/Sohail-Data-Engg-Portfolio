@@ -49,3 +49,15 @@ variable "force_destroy_buckets" {
   description = "Allow destroy of non-empty buckets (true in dev)."
   default     = true
 }
+
+variable "bigquery_location" {
+  type        = string
+  description = "BigQuery dataset location."
+  default     = "US"
+}
+
+variable "bigquery_deletion_protection" {
+  type        = bool
+  description = "Block destroy of BigQuery tables (true in prod)."
+  default     = false
+}

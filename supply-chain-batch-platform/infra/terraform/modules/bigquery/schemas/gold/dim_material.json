@@ -1,0 +1,14 @@
+[
+  {"name":"material_sk","type":"STRING","mode":"REQUIRED","description":"Surrogate key (per version)"},
+  {"name":"material_id","type":"STRING","mode":"REQUIRED","description":"Business key (leading zeros preserved)"},
+  {"name":"description","type":"STRING","mode":"NULLABLE"},
+  {"name":"category","type":"STRING","mode":"NULLABLE"},
+  {"name":"uom","type":"STRING","mode":"NULLABLE"},
+  {"name":"hazmat","type":"BOOL","mode":"NULLABLE"},
+  {"name":"std_cost","type":"NUMERIC","mode":"NULLABLE"},
+  {"name":"effective_from","type":"TIMESTAMP","mode":"REQUIRED"},
+  {"name":"effective_to","type":"TIMESTAMP","mode":"NULLABLE","description":"9999-12-31 for current"},
+  {"name":"is_current","type":"BOOL","mode":"REQUIRED"},
+  {"name":"row_hash","type":"STRING","mode":"NULLABLE","description":"Change-detection hash of tracked attributes"},
+  {"name":"batch_id","type":"STRING","mode":"NULLABLE"}
+]

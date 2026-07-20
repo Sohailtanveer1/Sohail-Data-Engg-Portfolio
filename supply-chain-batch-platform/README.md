@@ -10,13 +10,12 @@ This is the **batch** counterpart to the sibling
 platform. Where that project answers *"what is happening right now?"*, this one
 answers *"what happened, at scale, reliably, every day — and can I trust it?"*
 
-> **Status: Phase 3 — Terraform foundation built** (Phases 1–2 approved).
-> The `scb_common` library + five source generators + local Docker stack run at
-> $0 (46 tests green), and the GCP foundation (private networking, least-privilege
-> IAM, buckets, secrets, $50 budget) is written as reusable Terraform and
-> **validates** across dev/uat/prod (not yet applied — needs your project). See
-> [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) and the phase walkthroughs in
-> [docs/](docs/) (`phase-02-*`, `phase-03-*`).
+> **Status: Phase 4 — BigQuery datasets & metadata model built** (Phases 1–3 approved).
+> Local platform runs at $0 (52 tests green); the GCP foundation (networking, IAM,
+> buckets, secrets, budget) **plus** BigQuery (`scb_metadata_<env>` + `scb_gold_<env>`,
+> 20 tables) are reusable Terraform that **validates** across dev/uat/prod (not yet
+> applied — needs your project). See [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) and
+> the phase walkthroughs in [docs/](docs/) (`phase-02-*` … `phase-04-*`).
 
 ---
 

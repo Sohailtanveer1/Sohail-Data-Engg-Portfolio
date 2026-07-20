@@ -16,8 +16,8 @@ Mistakes → Cost Considerations → Next Steps).
 |---|---|---|---|---|
 | 1 | Planning & Architecture | ✅ Approved | Local (docs only) | $0 |
 | 2 | Local dev environment + data generators + `common` package | ✅ Complete | Local (Docker) | $0 |
-| 3 | Terraform foundation: APIs, VPC/networking, IAM, buckets, Secret Manager | 🟨 In review | GCP dev | ~$0–1 |
-| 4 | BigQuery: datasets + metadata/control/audit + Gold DDL | ⬜ | GCP dev | ~$0 (free tier) |
+| 3 | Terraform foundation: APIs, VPC/networking, IAM, buckets, Secret Manager | ✅ Complete | GCP dev | ~$0–1 |
+| 4 | BigQuery: datasets + metadata/control/audit + Gold DDL | 🟨 In review | GCP dev | ~$0 (free tier) |
 | 5 | Ingestion: land 5 sources → Bronze (metadata-driven, file tracking, archive) | ⬜ | Local + GCP | ~$1–3 |
 | 6 | Spark Bronze→Silver: schema validation, DQ, dedup, SCD1/SCD2, idempotency | ⬜ | Local Spark + Dataproc Serverless | ~$2–5 |
 | 7 | Gold build: dimensional model → BigQuery | ⬜ | Dataproc Serverless + BQ | ~$1–3 |
@@ -121,12 +121,45 @@ Terraform. No compute yet. Walkthrough + apply runbook:
 
 ### Exit criteria
 
-- [ ] **User reviews Phase 3.** ← _we are here_
-- [ ] (When ready) User runs the apply runbook and confirms `apply`/`destroy` round-trip.
+- [x] Phase 3 reviewed; approved to proceed.
 
 **Cleanup checklist (Phase 3):** `terraform destroy -var-file=dev.tfvars` in
 `environments/dev` (then optionally `bootstrap`). Verify ~$0 run-rate in Billing.
 NAT is the only ongoing trickle (~$1–3/mo) and is destroyed with the stack.
+
+---
+
+## Phase 4 — BigQuery datasets, metadata model & Gold DDL — 🟨 In review
+
+**Objective:** The serving (`scb_gold_<env>`) and operational (`scb_metadata_<env>`)
+BigQuery layers, all Terraform-managed, plus a BigQuery backend for the metadata
+store. Free-tier only. Walkthrough:
+[docs/phase-04-bigquery-metadata.md](docs/phase-04-bigquery-metadata.md).
+
+### Deliverables
+
+- [x] Reusable `bigquery` module (auto-discovers JSON schemas, partition/cluster
+      via `table_options`) — [infra/terraform/modules/bigquery/](infra/terraform/modules/bigquery/)
+- [x] **20 tables**: 7 metadata (control/audit/watermark/DQ/schema-registry) +
+      13 Gold (7 dims SCD1/SCD2 + 6 partitioned/clustered facts)
+- [x] Wired into dev/uat/prod roots (prod: deletion protection on)
+- [x] `BigQueryMetadataStore` (same interface as JSONL) —
+      [common/scb_common/stores/bigquery.py](common/scb_common/stores/bigquery.py)
+- [x] `terraform validate` Success on all roots; `fmt` clean; 20 schemas valid JSON
+- [x] **52 tests passing** (+6 BigQuery-store tests via a fake backend)
+
+### Not done here (by design)
+
+- Tables are **created empty** — populated in Phases 5–7.
+- No `terraform apply` in-session (needs your project); `bq ls` verification steps
+  are in the phase doc's runbook addition.
+
+### Exit criteria
+
+- [ ] **User reviews Phase 4.** ← _we are here_
+
+**Cleanup checklist (Phase 4):** covered by the dev `terraform destroy`
+(`delete_contents_on_destroy=true` in non-prod). BigQuery cost is ~$0 (free tier).
 
 ---
 
@@ -161,4 +194,7 @@ NAT is the only ongoing trickle (~$1–3/mo) and is destroyed with the stack.
 - **2026-07-20** — **Phase 3 built:** 6 Terraform modules + bootstrap +
   dev/uat/prod roots (private networking, least-privilege IAM, lifecycle buckets,
   secrets, $50 budget). `validate` Success on all roots; `fmt` clean. Not applied
-  (needs user's GCP project). Awaiting review.
+  (needs user's GCP project). Reviewed & approved.
+- **2026-07-20** — **Phase 4 built:** `bigquery` module + 20 tables (7 metadata,
+  13 Gold) + `BigQueryMetadataStore`. `validate` Success on all roots; 52 tests
+  green. Not applied. Awaiting review.

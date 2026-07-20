@@ -1,0 +1,7 @@
+[
+  {"name":"entity","type":"STRING","mode":"REQUIRED"},
+  {"name":"version","type":"INT64","mode":"REQUIRED"},
+  {"name":"columns_json","type":"STRING","mode":"NULLABLE","description":"Serialized column contract"},
+  {"name":"business_keys","type":"STRING","mode":"REPEATED"},
+  {"name":"updated_at","type":"TIMESTAMP","mode":"NULLABLE"}
+]

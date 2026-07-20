@@ -1,0 +1,11 @@
+[
+  {"name":"date_key","type":"INT64","mode":"REQUIRED","description":"yyyymmdd"},
+  {"name":"date","type":"DATE","mode":"REQUIRED"},
+  {"name":"year","type":"INT64","mode":"NULLABLE"},
+  {"name":"quarter","type":"INT64","mode":"NULLABLE"},
+  {"name":"month","type":"INT64","mode":"NULLABLE"},
+  {"name":"day","type":"INT64","mode":"NULLABLE"},
+  {"name":"day_of_week","type":"INT64","mode":"NULLABLE"},
+  {"name":"fiscal_year","type":"INT64","mode":"NULLABLE"},
+  {"name":"is_weekend","type":"BOOL","mode":"NULLABLE"}
+]

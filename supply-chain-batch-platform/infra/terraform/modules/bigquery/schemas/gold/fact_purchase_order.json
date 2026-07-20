@@ -1,0 +1,17 @@
+[
+  {"name":"po_sk","type":"STRING","mode":"REQUIRED","description":"Hash of po_number+po_line"},
+  {"name":"po_number","type":"STRING","mode":"REQUIRED"},
+  {"name":"po_line","type":"INT64","mode":"REQUIRED"},
+  {"name":"material_sk","type":"STRING","mode":"NULLABLE"},
+  {"name":"vendor_sk","type":"STRING","mode":"NULLABLE"},
+  {"name":"warehouse_sk","type":"STRING","mode":"NULLABLE"},
+  {"name":"order_date","type":"DATE","mode":"NULLABLE","description":"Partition column"},
+  {"name":"order_date_key","type":"INT64","mode":"NULLABLE"},
+  {"name":"expected_date_key","type":"INT64","mode":"NULLABLE"},
+  {"name":"order_qty","type":"INT64","mode":"NULLABLE"},
+  {"name":"unit_price","type":"NUMERIC","mode":"NULLABLE"},
+  {"name":"line_amount","type":"NUMERIC","mode":"NULLABLE"},
+  {"name":"open_qty","type":"INT64","mode":"NULLABLE"},
+  {"name":"currency","type":"STRING","mode":"NULLABLE"},
+  {"name":"batch_id","type":"STRING","mode":"NULLABLE"}
+]
